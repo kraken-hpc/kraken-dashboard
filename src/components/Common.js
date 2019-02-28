@@ -81,6 +81,25 @@ export function base64ToMac(str) {
   return result
 }
 
+// Takes in a key value pair and determines if it needs to be converted to a special formatted string. Used in RecursiveValues()
+export function Base64Convert(key, value) {
+  switch (true) {
+    case key.includes("ip"):
+      return base64ToIP(value)
+    case key.includes("mac"):
+      return base64ToMac(value)
+    case key.includes("subnet"):
+      return base64ToIP(value)
+    default:
+      return value
+  }
+}
+
+// Strips the leading string of the protobuf urls
+export function StripProtoUrl(url) {
+  return url.replace('type.googleapis.com/proto.', '')
+}
+
 // Fetches a json list of nodes from a url
 export function fetchNodeListFromUrl(url) {
   return fetch(url)
@@ -160,7 +179,7 @@ export function powerOnNode(dscNode, cfgNode, dscUrl, cfgUrl) {
   putNode(cfgUrl, cfgNode)
 }
 
-// Sorts nodes by nodename
+// nodeSort sorts nodes by nodename
 export function nodeSort(a, b) {
   if (typeof a.nodename === 'undefined' && typeof b.nodename === 'undefined') {
     return 0
@@ -198,8 +217,7 @@ export function nodeSort(a, b) {
   }
 }
 
-// Live Refreshing functions
-// 
+// liveFunction sets and interval to run a function every so many seconds
 export function liveFunction(refreshRate, stateName, intervalFunction) {
   if (refreshRate < 0.15) {
     refreshRate = 0.15
@@ -213,6 +231,7 @@ export function liveFunction(refreshRate, stateName, intervalFunction) {
   })
 }
 
+// stopLive clears any intervals set on a component
 export function stopLive() {
   if (typeof this.interval !== 'undefined') {
     clearInterval(this.interval)
@@ -223,20 +242,3 @@ export function stopLive() {
   })
 }
 
-export function StripProtoUrl(url) {
-  return url.replace('type.googleapis.com/proto.', '')
-}
-
-export function Base64Convert(key, value) {
-  switch (true) {
-    case key.includes("ip"):
-      return base64ToIP(value)
-    case key.includes("mac"):
-      return base64ToMac(value)
-    case key.includes("subnet"):
-      return base64ToIP(value)
-    default:
-      return value
-  }
-
-}

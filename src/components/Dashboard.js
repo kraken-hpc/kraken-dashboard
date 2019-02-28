@@ -14,6 +14,19 @@ import {
   Link,
 } from 'react-router-dom'
 
+function Dashboard(props) {
+  return (
+    <React.Fragment>
+      <Classes.Header refreshRate={props.refreshRate} changeRefresh={props.changeRefresh} />
+      <div>
+        <Legend />
+        <div className='node_area'>
+          <Cluster refreshRate={props.refreshRate} />
+        </div>
+      </div>
+    </React.Fragment>
+  )
+}
 
 class Cluster extends Component {
   constructor(props) {
@@ -244,7 +257,6 @@ class Cluster extends Component {
 
 }
 
-
 function Node(props) {
   // console.log(props)
   if (typeof props.data.physState === 'undefined') {
@@ -282,20 +294,6 @@ function MasterNode(props) {
       style={{ backgroundColor: physColor }}
       to={`node/${uuid}`}
     >Master</Link>
-  )
-}
-
-function Dashboard(props) {
-  return (
-    <React.Fragment>
-      <Classes.Header refreshRate={props.refreshRate} changeRefresh={props.changeRefresh} />
-      <div>
-        <Legend />
-        <div className='node_area'>
-          <Cluster refreshRate={props.refreshRate} />
-        </div>
-      </div>
-    </React.Fragment>
   )
 }
 

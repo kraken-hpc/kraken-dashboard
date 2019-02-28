@@ -11,6 +11,168 @@ import React, { Component } from 'react'
 import * as Common from './Common'
 import * as Classes from './Classes'
 
+function NodeView(props) {
+  return (
+    <React.Fragment>
+      <Classes.Header refreshRate={props.refreshRate} changeRefresh={props.changeRefresh} />
+      <NodeInfo refreshRate={props.refreshRate} match={props.match} />
+    </React.Fragment>
+  )
+}
+
+class NodeInfo extends Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      dscUrl: `http://${Common.KRAKEN_IP}/dsc/node/${props.match.params.uuid}`,
+      cfgUrl: `http://${Common.KRAKEN_IP}/cfg/node/${props.match.params.uuid}`,
+      graphUrl: `http://${Common.KRAKEN_IP}/graph/node/${props.match.params.uuid}/json`,
+      dscNode: {},
+      cfgNode: {},
+      graph: {},
+      disconnected: false,
+      liveUpdate: false,
+      liveReconnect: false,
+    }
+
+    this.organizeInfo = this.organizeInfo.bind(this)
+    this.nodeFetch = this.nodeFetch.bind(this)
+    this.liveFunction = Common.liveFunction.bind(this)
+    this.stopLive = Common.stopLive.bind(this)
+  }
+
+  componentDidMount() {
+    this.nodeFetch(this.state.cfgUrl, 'cfgNode', function () {
+      this.nodeFetch(this.state.dscUrl, 'dscNode', function () {
+        this.graphFetch(this.organizeInfo)
+      })
+    })
+  }
+
+  componentWillUnmount() {
+    this.stopLive()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.refreshRate !== this.props.refreshRate) {
+      this.liveFunction(nextProps.refreshRate, "liveUpdate", function () {
+        this.nodeFetch(this.state.dscUrl, 'dscNode', function () {
+          this.graphFetch(this.organizeInfo)
+        })
+      })
+    }
+  }
+
+  nodeFetch(url, state, nextFunction) {
+    Common.fetchJsonFromUrl(url)
+      .then((node) => {
+        if (node === null) {
+          this.setState({
+            disconnected: true,
+          })
+          if (typeof nextFunction !== 'undefined') {
+            nextFunction.call(this)
+          }
+        } else {
+          this.setState({
+            [state]: node,
+            disconnected: false,
+          })
+          if (typeof nextFunction !== 'undefined') {
+            nextFunction.call(this)
+          }
+        }
+      })
+
+  }
+
+  graphFetch(nextFunction) {
+    if (typeof this.state.cfgNode.parentId === 'undefined') {
+      if (typeof nextFunction !== 'undefined') {
+        nextFunction.call(this)
+      }
+      return
+    }
+    Common.fetchJsonFromUrl(this.state.graphUrl)
+      .then((graph) => {
+        if (graph === null) {
+          this.setState({
+            disconnected: true,
+          })
+          if (typeof nextFunction !== 'undefined') {
+            nextFunction.call(this)
+            return
+          }
+        } else {
+          this.setState({
+            graph: graph,
+          })
+          if (typeof nextFunction !== 'undefined') {
+            nextFunction.call(this)
+            return
+          }
+        }
+      })
+  }
+
+  organizeInfo() {
+    if (this.state.disconnected) {
+      if (this.state.liveReconnect) {
+        return
+      } else {
+        console.log("Disconnected from Kraken. Attempting reconnect")
+        this.liveFunction(this.props.refreshRate, "liveReconnect", function () { this.nodeFetch(this.state.cfgUrl, 'cfgNode', this.organizeInfo) })
+        return
+      }
+    } else if (!this.state.disconnected && this.state.liveReconnect) {
+      console.log("Reconnection established")
+      this.stopLive()
+    }
+
+    if (typeof this.state.cfgNode.id === 'undefined') {
+      console.log("Missing cfg node. Getting cfg node...")
+      this.nodeFetch(this.state.cfgUrl, 'cfgNode', this.organizeInfo)
+      return
+    } else if (Object.entries(this.state.dscNode).length === 0) {
+      console.log("Missing dsc node. Getting dsc node and graph...")
+      this.nodeFetch(this.state.dscUrl, 'dscNode', function () { this.graphFetch(this.organizeInfo) })
+      return
+    } else {
+      if (!this.state.liveUpdate) {
+        console.log("Starting live update and organizing...")
+        this.liveFunction(this.props.refreshRate, "liveUpdate", function () { this.nodeFetch(this.state.dscUrl, 'dscNode', function () { this.graphFetch(this.organizeInfo) }) })
+      }
+    }
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        {this.state.disconnected &&
+          <h2
+            style={{ textAlign: 'center', fontFamily: 'Arial', color: 'maroon' }}
+          >Disconnected From Kraken</h2>
+        }
+        {(typeof this.state.cfgNode.id === 'undefined' || typeof this.state.dscNode.id === 'undefined')
+          ? <h3
+            style={{ fontFamily: 'Arial' }}
+          >Loading...</h3>
+          : <React.Fragment>
+            <div>
+              <Square dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
+              <NodeDetails dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
+              <Actions dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} dscUrl={this.state.dscUrl} cfgUrl={this.state.cfgUrl} />
+            </div>
+            {Object.keys(this.state.graph).length !== 0 && <Classes.NodeGraph graph={this.state.graph} />}
+          </React.Fragment>
+        }
+      </React.Fragment>
+    )
+  }
+}
+
+
 function Square(props) {
   var physColor = Common.stateToColor(props.dscNode.physState)
   var runColor = Common.stateToColor(props.dscNode.runState)
@@ -199,167 +361,6 @@ function Actions(props) {
         onClick={() => { Common.powerOffNode(props.dscNode, props.cfgNode, props.dscUrl, props.cfgUrl) }}
       >Power Off</div>
     </div>
-  )
-}
-
-class NodeInfo extends Component {
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      dscUrl: `http://${Common.KRAKEN_IP}/dsc/node/${props.match.params.uuid}`,
-      cfgUrl: `http://${Common.KRAKEN_IP}/cfg/node/${props.match.params.uuid}`,
-      graphUrl: `http://${Common.KRAKEN_IP}/graph/node/${props.match.params.uuid}/json`,
-      dscNode: {},
-      cfgNode: {},
-      graph: {},
-      disconnected: false,
-      liveUpdate: false,
-      liveReconnect: false,
-    }
-
-    this.organizeInfo = this.organizeInfo.bind(this)
-    this.nodeFetch = this.nodeFetch.bind(this)
-    this.liveFunction = Common.liveFunction.bind(this)
-    this.stopLive = Common.stopLive.bind(this)
-  }
-
-  componentDidMount() {
-    this.nodeFetch(this.state.cfgUrl, 'cfgNode', function () {
-      this.nodeFetch(this.state.dscUrl, 'dscNode', function () {
-        this.graphFetch(this.organizeInfo)
-      })
-    })
-  }
-
-  componentWillUnmount() {
-    this.stopLive()
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.refreshRate !== this.props.refreshRate) {
-      this.liveFunction(nextProps.refreshRate, "liveUpdate", function () {
-        this.nodeFetch(this.state.dscUrl, 'dscNode', function () {
-          this.graphFetch(this.organizeInfo)
-        })
-      })
-    }
-  }
-
-  nodeFetch(url, state, nextFunction) {
-    Common.fetchJsonFromUrl(url)
-      .then((node) => {
-        if (node === null) {
-          this.setState({
-            disconnected: true,
-          })
-          if (typeof nextFunction !== 'undefined') {
-            nextFunction.call(this)
-          }
-        } else {
-          this.setState({
-            [state]: node,
-            disconnected: false,
-          })
-          if (typeof nextFunction !== 'undefined') {
-            nextFunction.call(this)
-          }
-        }
-      })
-
-  }
-
-  graphFetch(nextFunction) {
-    if (typeof this.state.cfgNode.parentId === 'undefined') {
-      if (typeof nextFunction !== 'undefined') {
-        nextFunction.call(this)
-      }
-      return
-    }
-    Common.fetchJsonFromUrl(this.state.graphUrl)
-      .then((graph) => {
-        if (graph === null) {
-          this.setState({
-            disconnected: true,
-          })
-          if (typeof nextFunction !== 'undefined') {
-            nextFunction.call(this)
-            return
-          }
-        } else {
-          this.setState({
-            graph: graph,
-          })
-          if (typeof nextFunction !== 'undefined') {
-            nextFunction.call(this)
-            return
-          }
-        }
-      })
-  }
-
-  organizeInfo() {
-    if (this.state.disconnected) {
-      if (this.state.liveReconnect) {
-        return
-      } else {
-        console.log("Disconnected from Kraken. Attempting reconnect")
-        this.liveFunction(this.props.refreshRate, "liveReconnect", function () { this.nodeFetch(this.state.cfgUrl, 'cfgNode', this.organizeInfo) })
-        return
-      }
-    } else if (!this.state.disconnected && this.state.liveReconnect) {
-      console.log("Reconnection established")
-      this.stopLive()
-    }
-
-    if (typeof this.state.cfgNode.id === 'undefined') {
-      console.log("Missing cfg node. Getting cfg node...")
-      this.nodeFetch(this.state.cfgUrl, 'cfgNode', this.organizeInfo)
-      return
-    } else if (Object.entries(this.state.dscNode).length === 0) {
-      console.log("Missing dsc node. Getting dsc node and graph...")
-      this.nodeFetch(this.state.dscUrl, 'dscNode', function () { this.graphFetch(this.organizeInfo) })
-      return
-    } else {
-      if (!this.state.liveUpdate) {
-        console.log("Starting live update and organizing...")
-        this.liveFunction(this.props.refreshRate, "liveUpdate", function () { this.nodeFetch(this.state.dscUrl, 'dscNode', function () { this.graphFetch(this.organizeInfo) }) })
-      }
-    }
-  }
-
-  render() {
-    return (
-      <React.Fragment>
-        {this.state.disconnected &&
-          <h2
-            style={{ textAlign: 'center', fontFamily: 'Arial', color: 'maroon' }}
-          >Disconnected From Kraken</h2>
-        }
-        {(typeof this.state.cfgNode.id === 'undefined' || typeof this.state.dscNode.id === 'undefined')
-          ? <h3
-            style={{ fontFamily: 'Arial' }}
-          >Loading...</h3>
-          : <React.Fragment>
-            <div>
-              <Square dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
-              <NodeDetails dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
-              <Actions dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} dscUrl={this.state.dscUrl} cfgUrl={this.state.cfgUrl} />
-            </div>
-            {Object.keys(this.state.graph).length !== 0 && <Classes.NodeGraph graph={this.state.graph} />}
-          </React.Fragment>
-        }
-      </React.Fragment>
-    )
-  }
-}
-
-function NodeView(props) {
-  return (
-    <React.Fragment>
-      <Classes.Header refreshRate={props.refreshRate} changeRefresh={props.changeRefresh} />
-      <NodeInfo refreshRate={props.refreshRate} match={props.match} />
-    </React.Fragment>
   )
 }
 
