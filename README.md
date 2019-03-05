@@ -3,17 +3,22 @@ kraken-dashboard is a web application created using [Node.js](https://nodejs.org
 
 ## Getting Started
 ### Prerequisites
-The only requirement for kraken-dashboard is nodejs. Once this is installed, you can use npm to install all the other dependencies.
+The only requirements for kraken-dashboard are nodejs and yarn. Once these are installed, you can use yarn to install all the other node modules.
 * [Node.js](https://nodejs.org)
-```
-sudo yum install nodejs
-```
+* [yarn](https://yarnpkg.com/lang/en/docs/install)
 
 ### Starting a development server
-1. Clone the repository: `git clone github.com/hpc/kraken-dashboard`
+1. Clone the repository: `git clone https://github.com/hpc/kraken-dashboard.git`
 2. Go into the kraken-dashboard directory: `cd kraken-dashboard`
-3. To install all node modules run: `npm install` (This is only nessesary after a fresh clone)
-4. To start the development server run: `npm start` (This should open a browser automatically otherwise go to localhost:3000)
+3. To install all node modules run: `yarn` (This is only nessesary after a fresh clone)
+4. To start the development server run: `yarn start` (This should open a browser automatically otherwise go to localhost:3000)
+5. Enjoy!
+
+### Build the standalone application
+1. Clone the repository: `git clone https://github.com/hpc/kraken-dashboard.git`
+2. Go into the kraken-dashboard directory: `cd kraken-dashboard`
+3. To install all node modules run: `yarn` (This is only nessesary after a fresh clone)
+4. To build the electron app run: `yarn electron-pack` (this will build the electron application in the `dist` folder)
 5. Enjoy!
 
 ## Configuration

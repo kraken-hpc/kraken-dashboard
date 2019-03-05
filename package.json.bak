@@ -1,0 +1,57 @@
+{
+  "name": "kraken_dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "braces": "^2.3.2",
+    "electron-is-dev": "^1.0.1",
+    "fse": "^4.0.1",
+    "fsevents": "^1.2.7",
+    "node-gyp": "^3.8.0",
+    "node-pre-gyp": "^0.12.0",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
+    "react-scripts": "^2.1.5",
+    "react-scripts-ts": "^4.0.8",
+    "typescript": "^3.3.3333",
+    "vis": "^4.21.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron-dev": "concurrently \"BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "build -c.extraMetadata.main=build/electron.js",
+    "preelectron-pack": "npm run build"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "electron": "^4.0.6",
+    "electron-builder": "^20.38.5",
+    "wait-on": "^3.2.0"
+  },
+  "main": "public/electron.js",
+  "build": {
+    "appId": "com.example.kraken-dashboard",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  },
+  "homepage": "./"
+}

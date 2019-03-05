@@ -1,21 +1,35 @@
 {
-  "name": "kraken_dashboard",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "braces": "^2.3.2",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
-    "react-router": "^4.3.1",
-    "react-router-dom": "^4.3.1",
-    "react-scripts": "^2.1.5",
-    "vis": "^4.21.0"
-  },
+  "name": "kraken-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard for Kraken",
+  "main": "public/electron.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron-dev": "concurrently \"BROWSER=none yarn start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "electron-builder -c.extraMetadata.main=build/electron.js",
+    "preelectron-pack": "yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hpc/kraken-dashboard.git"
+  },
+  "author": "Kevin Pelzel",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/hpc/kraken-dashboard/issues"
+  },
+  "homepage": "./",
+  "dependencies": {
+    "electron-is-dev": "^1.0.1",
+    "react": "^16.8.3",
+    "react-dom": "^16.8.3",
+    "react-router-dom": "^4.3.1",
+    "react-scripts": "^2.1.5",
+    "typescript": "^3.3.3333",
+    "vis": "^4.21.0"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -25,5 +39,21 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "devDependencies": {
+    "concurrently": "^4.1.0",
+    "electron": "^4.0.6",
+    "electron-builder": "^20.38.5",
+    "wait-on": "^3.2.0"
+  },
+  "build": {
+    "appId": "com.example.kraken-dashboard",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
 }
