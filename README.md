@@ -21,7 +21,7 @@ sudo yum install nodejs
 1. Clone the repository: `git clone https://github.com/hpc/kraken-dashboard.git`
 2. Go into the kraken-dashboard directory: `cd kraken-dashboard`
 3. To install all node modules run: `yarn` (This is only nessesary after a fresh clone)
-4. To build the electron app: `yarn electron-pack` (this will build the electron application in the `dist` folder)
+4. To build the electron app run: `yarn electron-pack` (this will build the electron application in the `dist` folder)
 5. Enjoy!
 
 ## Configuration
