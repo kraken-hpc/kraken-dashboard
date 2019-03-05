@@ -12,7 +12,7 @@ import Dashboard from './Dashboard'
 import NodeView from './NodeView'
 import * as Common from './Common'
 import {
-  BrowserRouter,
+  HashRouter,
   Route,
 } from 'react-router-dom'
 
@@ -32,7 +32,7 @@ class App extends Component {
 
   render() {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <React.Fragment>
           <Route
             exact path='/'
@@ -44,7 +44,7 @@ class App extends Component {
           />
         </React.Fragment>
 
-      </BrowserRouter>
+      </HashRouter>
     )
   }
 }
