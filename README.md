@@ -3,7 +3,7 @@ kraken-dashboard is a web application created using [Node.js](https://nodejs.org
 
 ## Getting Started
 ### Prerequisites
-The only requirements for kraken-dashboard is nodejs. Once this is installed, you can use npm to install all the other dependencies.
+The only requirements for kraken-dashboard are nodejs and yarn. Once these are installed, you can use yarn to install all the other node modules.
 * [Node.js](https://nodejs.org)
 * [yarn](https://yarnpkg.com/lang/en/docs/install)
 
