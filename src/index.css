@@ -19,6 +19,8 @@
   --light_red: #FF6656;
   --grey: #a5a5a5;
   --purple: #6a51ba;
+  --dark_purple: #4d3796;
+  --light_purple: #7864b8;
   --green: #89CA78;
   --dark_green: #6fa561;
   --light_green: #90d87d;
@@ -297,12 +299,27 @@ h2{
 
 .node_graph{
   display: block;
-  margin: 10px;
   width: auto;
-  height: 400px;
+  height: 100%;
   border: black;
   border-radius: 8px;
 }
+
+.graph_area{
+  transition: all 0.1s ease-out;
+  position: fixed;
+  left: 2rem;
+  right: 2rem;
+  height: 93%;
+  top: 2rem;
+  /* margin: 1rem 0 0 0; */
+  font-family: Arial, Helvetica, sans-serif;
+  z-index: 1;
+  background-color: white;
+  border: medium solid var(--border_gray);
+  border-radius: 10px;
+}
+
 
 /* buttons */
 .button {
@@ -342,8 +359,35 @@ div .green:hover {
   background-color: var(--light_green);
 }
 
+div .purple {
+  background-color: var(--purple);
+  box-shadow: 0px 5px 0px 0px var(--dark_purple);
+}
+
+div .purple:hover {
+  background-color: var(--light_purple);
+}
+
+#graph_button {
+  padding: 0;
+} 
+
 .title_link {
   text-decoration: none !important;
+}
+
+.close_button{
+  z-index: 1;
+  position: absolute;
+  top: -16px;
+  left: -20px;
+  padding: 4px 4px 0px 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  background-color: white;
+  border: medium solid var(--border_gray);
+  border-radius: 50px;
+  cursor: pointer;
 }
 
 /* Settings Modal */

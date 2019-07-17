@@ -7,7 +7,8 @@
  * See LICENSE file for details.
  */
 
-import React, { Component } from 'react'
+import React, { Component, createRef } from 'react'
+import vis from 'vis'
 import * as Common from './Common'
 import * as Classes from './Classes'
 
@@ -34,9 +35,11 @@ class NodeInfo extends Component {
       disconnected: false,
       liveUpdate: false,
       liveReconnect: false,
+      graphOpen: false,
     }
 
     this.organizeInfo = this.organizeInfo.bind(this)
+    this.graphToggle = this.graphToggle.bind(this)
     this.nodeFetch = this.nodeFetch.bind(this)
     this.liveFunction = Common.liveFunction.bind(this)
     this.stopLive = Common.stopLive.bind(this)
@@ -146,6 +149,12 @@ class NodeInfo extends Component {
     }
   }
 
+  graphToggle() {
+    this.setState({
+      graphOpen: !this.state.graphOpen
+    })
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -162,9 +171,9 @@ class NodeInfo extends Component {
             <div>
               <Square dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
               <NodeDetails dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} />
-              <Actions dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} dscUrl={this.state.dscUrl} cfgUrl={this.state.cfgUrl} />
+              <Actions dscNode={this.state.dscNode} cfgNode={this.state.cfgNode} dscUrl={this.state.dscUrl} cfgUrl={this.state.cfgUrl} graphToggle={this.graphToggle}/>
             </div>
-            {Object.keys(this.state.graph).length !== 0 && <Classes.NodeGraph graph={this.state.graph} />}
+            {Object.keys(this.state.graph).length !== 0 && <NodeGraph graph={this.state.graph} graphOpen={this.state.graphOpen} graphToggle={this.graphToggle}/>}
           </React.Fragment>
         }
       </React.Fragment>
@@ -349,7 +358,7 @@ function NodeViewRow(key, depth, value) {
   </div>)
 }
 
-function Actions(props) {
+function Actions(props) {  
   return (
     <div className={`actions_area ${typeof props.cfgNode.parentId === 'undefined' ? 'hidden' : ''}`}>
       <div
@@ -360,8 +369,128 @@ function Actions(props) {
         className={`button red`}
         onClick={() => { Common.powerOffNode(props.dscNode, props.cfgNode, props.dscUrl, props.cfgUrl) }}
       >Power Off</div>
+      <div
+        className={`button purple`}
+        id={`graph_button`}
+        onClick={() => { props.graphToggle() }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="38" viewBox="0 0 24 20"><path fill="None" d="M0 0h24v24H0V0z"/><path fill="white" d="M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05.16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z"/></svg>
+      </div>
     </div>
   )
+}
+
+class NodeGraph extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.appRef = createRef()
+
+    var nodes = props.graph.nodes
+
+    // Add highlight color to nodes
+    for (var i = 0; i < nodes.length; i++) {
+      var highlight = {
+        border: nodes[i].color.border,
+        background: nodes[i].color.background,
+      }
+      nodes[i].color.highlight = highlight
+      nodes[i].borderWidth = 2
+    }
+
+    var data = {
+      nodes: new vis.DataSet(nodes),
+      edges: new vis.DataSet(props.graph.edges),
+    }
+
+    var options = {
+      edges: {
+        arrows: {
+          to: {
+            enabled: true,
+            scaleFactor: 1.5,
+          }
+        },
+        color: {
+          inherit: false,
+        },
+        width: 4,
+      },
+      physics: {
+        enabled: true,
+        barnesHut: {
+          gravitationalConstant: -50000,
+        },
+      },
+      height: "100%",
+      width: "100%",
+    }
+    
+
+    this.state = {
+      data: data,
+      options: options,
+      style: {
+        opacity: (this.props.graphOpen) ? 100 : 0,
+        visibility: (this.props.graphOpen) ? "visible" : "hidden",
+      },
+    }
+  }
+
+  componentDidMount() {
+    var network = new vis.Network(this.appRef.current, this.state.data, this.state.options)
+    network.fit(this.state.options)
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.graphOpen !== this.props.graphOpen) {
+      this.setState({
+        style: {
+          opacity: (nextProps.graphOpen) ? 100 : 0,
+          visibility: (nextProps.graphOpen) ? "visible" : "hidden",
+        }
+      })
+    }
+    
+    if (nextProps.graph !== this.props.graph) {
+      var data = this.state.data
+      var nodes = nextProps.graph.nodes
+
+      // Add highlight color to nodes
+      for (var i = 0; i < nodes.length; i++) {
+        var highlight = {
+          border: nodes[i].color.border,
+          background: nodes[i].color.background,
+        }
+        nodes[i].color.highlight = highlight
+        nodes[i].borderWidth = 2
+      }
+
+      data.nodes.update(nodes)
+      data.edges.update(nextProps.graph.edges)
+      this.forceUpdate()
+    }
+
+  }
+
+  render() {
+    return (
+      <div
+        style={this.state.style}
+        className={`graph_area`}>
+        <div 
+        className="close_button"
+        onClick={() => { this.props.graphToggle() }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="None" d="M0 0h24v24H0V0z"/><path fill={Common.GLOBAL_COLORS.grey} d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/></svg>
+        </div>
+        <div
+          className={`node_graph`}
+          ref={this.appRef} 
+        />
+        <div
+          ref={this.configRef}/>
+      </div>
+    )
+  }
 }
 
 export default NodeView

@@ -7,8 +7,7 @@
  * See LICENSE file for details.
  */
 
-import React, { Component, createRef } from 'react'
-import vis from 'vis'
+import React from 'react'
 import * as Common from './Common'
 import {
   Link,
@@ -106,89 +105,3 @@ class SettingsModal extends React.Component {
   }
 }
 
-
-export class NodeGraph extends Component {
-  constructor(props) {
-    super(props)
-    this.appRef = createRef()
-
-    var nodes = props.graph.nodes
-
-    // Add highlight color to nodes
-    for (var i = 0; i < nodes.length; i++) {
-      var highlight = {
-        border: nodes[i].color.border,
-        background: nodes[i].color.background,
-      }
-      nodes[i].color.highlight = highlight
-      nodes[i].borderWidth = 2
-    }
-
-    var data = {
-      nodes: new vis.DataSet(nodes),
-      edges: new vis.DataSet(props.graph.edges),
-    }
-
-    var options = {
-      edges: {
-        arrows: {
-          to: {
-            enabled: true,
-            scaleFactor: 1.5,
-          }
-        },
-        color: {
-          inherit: false,
-        },
-        width: 4,
-      },
-      physics: {
-        enabled: true,
-        barnesHut: {
-          gravitationalConstant: -50000,
-        },
-      },
-      height: "100%",
-      width: "100%",
-    }
-
-    this.state = {
-      data: data,
-      options: options,
-    }
-  }
-
-  componentDidMount() {
-    var network = new vis.Network(this.appRef.current, this.state.data, this.state.options)
-    network.fit(this.state.options)
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.graph !== this.props.graph) {
-      var data = this.state.data
-      var nodes = nextProps.graph.nodes
-
-      // Add highlight color to nodes
-      for (var i = 0; i < nodes.length; i++) {
-        var highlight = {
-          border: nodes[i].color.border,
-          background: nodes[i].color.background,
-        }
-        nodes[i].color.highlight = highlight
-        nodes[i].borderWidth = 2
-      }
-
-      data.nodes.update(nodes)
-      data.edges.update(nextProps.graph.edges)
-      this.forceUpdate()
-    }
-  }
-
-  render() {
-    return (
-      <div
-        className={`node_graph`}
-        ref={this.appRef} />
-    )
-  }
-}
