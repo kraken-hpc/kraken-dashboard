@@ -1,5 +1,5 @@
 import { fetchNodeListFromUrl } from "./fetch";
-import { COLORS } from "../config";
+import { COLORS, cfgUrlSingle, dscUrlSingle } from "../config";
 
 export type KrakenState = 'PHYS_ERROR' | 'ERROR' | 'POWER_CYCLE' | 'PHYS_HANG' | 'POWER_OFF' | 'PHYS_UNKNOWN' | 'UNKNOWN' | 'INIT' | 'SYNC' | 'POWER_ON'
 
@@ -33,7 +33,7 @@ export const cfgNodeFetch = async (
     for (var i = 0; i < inputNodes.length; i++) {
       if (
         inputNodes[i].parentId === null ||
-        typeof inputNodes[i].parentId === "undefined"
+        inputNodes[i].parentId === undefined
       ) {
         masterNode = inputNodes[i];
       } else {
@@ -85,14 +85,14 @@ export const dscNodeFetch = async (
 };
 
 // nodeSort sorts nodes by nodename
-export const nodeSort = (a:Node, b: Node): number => {
-  if (typeof a.nodename === 'undefined' && typeof b.nodename === 'undefined') {
+export const nodeSort = (a: Node, b: Node): number => {
+  if (a.nodename === undefined && b.nodename === undefined) {
     return 0
   }
-  else if (typeof a.nodename === 'undefined') {
+  else if (a.nodename === undefined) {
     return -1
   }
-  else if (typeof b.nodename === 'undefined') {
+  else if (b.nodename === undefined) {
     return 1
   }
   else {
@@ -104,13 +104,13 @@ export const nodeSort = (a:Node, b: Node): number => {
     let bCluster: number | undefined = undefined
     let bNode: number | undefined = undefined
 
-    if (aMatch !== null){
+    if (aMatch !== null) {
       aCluster = parseInt(aMatch[1])
-      aNode = parseInt(aMatch[3])  
+      aNode = parseInt(aMatch[3])
     }
-    if (bMatch !== null){
+    if (bMatch !== null) {
       bCluster = parseInt(bMatch[1])
-      bNode = parseInt(bMatch[3])  
+      bNode = parseInt(bMatch[3])
     }
 
     if (aCluster !== undefined && bCluster !== undefined && aCluster > bCluster) {
@@ -125,7 +125,6 @@ export const nodeSort = (a:Node, b: Node): number => {
       return -1
     }
 
-    // console.log(parseInt(aMatch[1]))
     return a.nodename.localeCompare(b.nodename)
   }
 }
@@ -228,4 +227,56 @@ export const base64Convert = (key: string, value: string) => {
 // Strips the leading string of the protobuf urls
 export const stripProtoUrl = (url: string) => {
   return url.replace('type.googleapis.com/proto.', '')
+}
+
+// Sends a PUT command to set data for a node (Used for power off and power on)
+export const putNode = (url: string, data: Node, callback?: () => void) => {
+  console.log("body:", JSON.stringify(data))
+  return fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }
+
+  ).then(res => res.json())
+    // .then(response => console.log('Success:', JSON.stringify(response)))
+    .then(callback)
+    .catch(error => console.error('putNode error:', error));
+}
+
+// Powers on a node
+export const powerOnNode = (cfgNode: Node) => {
+
+  cfgNode.runState = "SYNC"
+  cfgNode.physState = "POWER_ON"
+
+  putNode(cfgUrlSingle, cfgNode)
+}
+
+// Powers off a node
+export const powerOffNode = (cfgNode: Node, dscNode: Node) => {
+  cfgNode.physState = "POWER_OFF"
+  cfgNode.runState = "UNKNOWN"
+  if (cfgNode.extensions !== undefined) {
+    for (var i = 0; i < cfgNode.extensions.length; i++) {
+      if (cfgNode.extensions[i]['@type'] === "type.googleapis.com/proto.PXE") {
+        cfgNode.extensions[i]['state'] = "NONE"
+      } else if (cfgNode.extensions[i]['@type'] === "type.googleapis.com/proto.RPi3") {
+        cfgNode.extensions[i]['pxe'] = "NONE"
+      }
+    }
+  }
+
+  dscNode.runState = "UNKNOWN"
+  if (dscNode.extensions !== undefined) {
+    for (i = 0; i < dscNode.extensions.length; i++) {
+      if (dscNode.extensions[i]['@type'] === "type.googleapis.com/proto.PXE") {
+        dscNode.extensions[i]['state'] = "NONE"
+      } else if (dscNode.extensions[i]['@type'] === "type.googleapis.com/proto.RPi3") {
+        dscNode.extensions[i]['pxe'] = "NONE"
+      }
+    }
+  }
+
+  putNode(dscUrlSingle, dscNode, () => {putNode(cfgUrlSingle,cfgNode)})
 }

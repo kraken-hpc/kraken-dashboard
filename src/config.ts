@@ -7,9 +7,14 @@ export const WEBSOCKET = true
 
 export const dscUrl:string = `http://${KRAKEN_IP}/dsc/nodes`
 export const cfgUrl:string = `http://${KRAKEN_IP}/cfg/nodes`
+export const dscUrlSingle:string = `http://${KRAKEN_IP}/dsc/node`
+export const cfgUrlSingle:string = `http://${KRAKEN_IP}/cfg/node`
 export const graphUrl:string =  `http://${KRAKEN_IP}/graph/json`
 export const webSocketUrl:string = `http://${KRAKEN_IP}/ws`
 
+export const graphUrlSingle = (uuid: string): string => {
+  return `http://${KRAKEN_IP}/graph/node/${uuid}/json`
+}
 
 export const COLORS = {
   red: window.getComputedStyle(document.documentElement).getPropertyValue("--red"),

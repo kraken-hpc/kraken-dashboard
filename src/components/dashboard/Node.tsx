@@ -7,15 +7,13 @@ export interface NodeProps {
 }
 
 export const Node = (props: NodeProps) => {
-  // console.log(props)
-  if (typeof props.data.physState === 'undefined') {
+  if (props.data.physState === undefined) {
     props.data.physState = 'UNKNOWN'
   }
-  if (typeof props.data.runState === 'undefined') {
+  if (props.data.runState === undefined) {
     props.data.runState = 'UNKNOWN'
   }
 
-  // console.log(props.data)
   const name = props.data.nodename
   const physColor = stateToColor(props.data.physState)
   const runColor = stateToColor(props.data.runState)
@@ -26,7 +24,7 @@ export const Node = (props: NodeProps) => {
   return (
     <Link
       data-popup={popupData}
-      className={`square shadow animate`}
+      className={`square`}
       style={{ borderTopColor: physColor, borderRightColor: runColor, borderBottomColor: runColor, borderLeftColor: physColor }}
       to={`node/${uuid}`}
     />

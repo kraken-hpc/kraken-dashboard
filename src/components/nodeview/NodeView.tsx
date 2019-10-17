@@ -2,11 +2,16 @@ import { Node } from "../../kraken-interactions/node";
 import React, { Component } from "react";
 import {Square} from './Square'
 import { NodeDetails } from "./NodeDetails";
+import { Actions } from "./Actions";
+import { Graph } from "../../kraken-interactions/graph";
+import {NodeGraph} from './NodeGraph';
 
 interface NodeViewProps{
   disconnected: boolean
   cfgNode: Node | undefined
   dscNode: Node | undefined
+  opened: () => void
+  graph: Graph | undefined
 }
 
 export interface NodeViewState {
@@ -15,12 +20,21 @@ export interface NodeViewState {
 
 export class NodeView extends Component<NodeViewProps, NodeViewState> {
   constructor(props: NodeViewProps){
-    console.log("Nodeview props:", props)
     super(props)
 
     this.state = {
       graphOpen: false
     }
+  }
+
+  componentDidMount = () => {
+    this.props.opened()
+  }
+
+  graphToggle = () => {
+    this.setState({
+      graphOpen: !this.state.graphOpen
+    })
   }
 
   render() {
@@ -39,9 +53,9 @@ export class NodeView extends Component<NodeViewProps, NodeViewState> {
             <div className={`node-view`}>
               <Square dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} />
               <NodeDetails dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} />
-              {/* <Actions dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} dscUrl={this.props.dscUrl} cfgUrl={this.props.cfgUrl} graphToggle={this.graphToggle} /> */}
+              <Actions dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} graphToggle={this.graphToggle} />
             </div>
-            {/* {Object.keys(this.props.graph).length !== 0 && <NodeGraph graph={this.props.graph} graphOpen={this.state.graphOpen} graphToggle={this.graphToggle} />} */}
+            {(this.props.graph !== undefined && Object.keys(this.props.graph).length !== 0) && <NodeGraph graph={this.props.graph} graphOpen={this.state.graphOpen} graphToggle={this.graphToggle} />}
           </React.Fragment>
         }
       </React.Fragment>

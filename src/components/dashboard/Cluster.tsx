@@ -7,6 +7,7 @@ interface ClusterProps {
   disconnected: boolean
   masterNode: NodeInterface
   nodes: Map<string, NodeInterface>
+  opened: () => void
 }
 
 export class Cluster extends Component<ClusterProps> {
@@ -40,8 +41,11 @@ export class Cluster extends Component<ClusterProps> {
     };
   }
 
-  render() {
-    // console.log("render", Array.from(this.state.nodes.values()))
+  componentDidMount = () => {
+    this.props.opened()
+  }
+
+  render = () =>{
     var counts = this.stateCount(this.props.nodes);
     return (
       <React.Fragment>
@@ -57,7 +61,7 @@ export class Cluster extends Component<ClusterProps> {
           </h2>
         )}
         {this.props.nodes.size === 0 &&
-          typeof this.props.masterNode.id === "undefined" ? (
+          this.props.masterNode.id === undefined ? (
             <h3 style={{ fontFamily: "Arial" }}>Loading...</h3>
           ) : (
             <div className="cluster">

@@ -5,14 +5,15 @@ import './components/dashboard/styles/dashboard.css'
 import './components/nodeview/styles/nodeview.css'
 
 import React, { Component } from "react";
-import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl } from "./config";
+import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle } from "./config";
 import { HashRouter, Route } from "react-router-dom";
 import { Header } from "./components/header/Header";
 import { Dashboard } from "./components/dashboard/Dashboard";
-import { Node, dscNodeFetch, uuidToBase64, nodeSort, cfgNodeFetch } from "./kraken-interactions/node"
+import { Node, dscNodeFetch, uuidToBase64, nodeSort, cfgNodeFetch, base64ToUuid } from "./kraken-interactions/node"
 import { LiveConnectionType } from "./kraken-interactions/live";
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
-import {NodeView} from './components/nodeview/NodeView'
+import { NodeView } from './components/nodeview/NodeView'
+import { Graph } from './kraken-interactions/graph'
 
 interface AppProps { }
 
@@ -26,6 +27,8 @@ interface AppState {
   cfgNodes: Map<string, Node>;
   dscMaster: Node;
   dscNodes: Map<string, Node>;
+  updatingGraph: string | undefined;
+  graph: Graph | undefined;
 }
 
 class App extends Component<AppProps, AppState> {
@@ -45,6 +48,8 @@ class App extends Component<AppProps, AppState> {
       dscNodes: new Map(),
       dscMaster: {},
       liveConnectionActive: 'REFETCH',
+      updatingGraph: undefined,
+      graph: undefined,
     };
   }
 
@@ -63,8 +68,12 @@ class App extends Component<AppProps, AppState> {
       }
     }
 
+    if (this.state.updatingGraph !== prevState.updatingGraph && this.state.updatingGraph !== undefined) {
+      this.getGraph(this.state.updatingGraph)
+    }
+
     if (this.state.refreshRate !== prevState.refreshRate) {
-      switch (this.state.liveConnectionActive){
+      switch (this.state.liveConnectionActive) {
         case 'POLLING':
           this.stopPolling()
           this.startPolling()
@@ -202,7 +211,7 @@ class App extends Component<AppProps, AppState> {
       }
 
       this.websocket.onmessage = (message) => {
-        var jsonMessage = JSON.parse(message.data)
+        const jsonMessage = JSON.parse(message.data)
         console.log("websocket received this message:", jsonMessage)
         if (jsonMessage !== null) {
           this.handleWebSocketMessage(jsonMessage)
@@ -219,26 +228,26 @@ class App extends Component<AppProps, AppState> {
   }
 
   handleWebSocketMessage = (jsonData: any) => {
-    var newNodes = new Map(this.state.nodes)
-    var dscUpdateHappened = false
-    for (var i = 0; i < jsonData.length; i++) {
+    const newNodes = new Map(this.state.nodes)
+    const newDscNodes = new Map(this.state.dscNodes)
+    let dscUpdateHappened = false
+    for (let i = 0; i < jsonData.length; i++) {
       if (jsonData[i].type === 1) {
-        // console.log("jsonData", jsonData)
         // If it's a creation message, stop the loop and pull cfgNodes and dscNodes
-        if (jsonData[i].data.includes("(CREATE)")) {
-          console.log("Creation found. Close websocket and pull dsc and cfg nodes")
+        if (jsonData[i].data.includes("(CREATE)") || jsonData[i].data.includes("(CFG_UPDATE")) {
+          console.log("Creation or update found. Close websocket and pull dsc and cfg nodes")
           this.setState({
             liveConnectionActive: 'REFETCH'
           })
           break
         } else {
-          var jsonMessage = jsonData[i]
+          const jsonMessage = jsonData[i]
           // This is a physstate or runstate update
           if (jsonMessage.url === "/PhysState" || jsonMessage.url === "/RunState") {
-            // console.log("Updating node:", jsonMessage.nodeid)
-            var base64Id = uuidToBase64(jsonMessage.nodeid)
-            var newNode = newNodes.get(base64Id)
-            if (newNode === undefined) {
+            const base64Id = uuidToBase64(jsonMessage.nodeid)
+            const newNode = newNodes.get(base64Id)
+            const newDscNode = newDscNodes.get(base64Id)
+            if (newNode === undefined || newDscNode === undefined) {
               console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
               this.setState({
                 liveConnectionActive: 'REFETCH'
@@ -248,16 +257,20 @@ class App extends Component<AppProps, AppState> {
             switch (jsonMessage.url) {
               case "/PhysState":
                 newNode.physState = jsonMessage.value
+                newDscNode.physState = jsonMessage.value
                 if (jsonMessage.value === "POWER_OFF") {
                   newNode.runState = "UNKNOWN"
+                  newDscNode.runState = "UNKNOWN"
                 } else if (jsonMessage.value === "PHYS_HANG") {
                   newNode.runState = "UNKNOWN"
+                  newDscNode.runState = "UNKNOWN"
                 }
-                newNodes.set(base64Id, newNode)
+                // newNodes.set(base64Id, newNode)
                 break
               case "/RunState":
                 newNode.runState = jsonMessage.value
-                newNodes.set(base64Id, newNode)
+                newDscNode.runState = jsonMessage.value
+                // newNodes.set(base64Id, newNode)
                 break
               default:
                 break
@@ -266,21 +279,24 @@ class App extends Component<AppProps, AppState> {
           }
         }
       }
+      else if (this.state.updatingGraph !== undefined && (jsonData[i].type === 2 || jsonData[i].type === 5) && jsonData[i].nodeid === base64ToUuid(this.state.updatingGraph).toLowerCase()) {
+        this.getGraph(this.state.updatingGraph)
+      }
     }
     if (dscUpdateHappened) {
       this.setState({
         nodes: newNodes,
+        dscNodes: newDscNodes
       })
-      // this.organizeNodes()
     }
   }
 
   setFinalNodes = (cfgMaster: Node, cfgNodes: Map<string, Node>, dscMaster: Node, dscNodes: Map<string, Node>, callback?: () => void) => {
-    var finalNodes = new Map(cfgNodes)
+    let finalNodes = new Map(cfgNodes)
 
     // Set the dsc physstate and runstate to the final nodes value
     finalNodes.forEach((value, key, map) => {
-      var dscNode = dscNodes.get(key)
+      const dscNode = dscNodes.get(key)
       if (dscNode !== undefined) {
         value.physState = dscNode.physState
         value.runState = dscNode.runState
@@ -288,9 +304,9 @@ class App extends Component<AppProps, AppState> {
     })
 
     // Sort the Map
-    var finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
+    const finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
     finalNodes = new Map()
-    for (var i = 0; i < finalNodesArray.length; i++) {
+    for (let i = 0; i < finalNodesArray.length; i++) {
       const id = finalNodesArray[i].id
       if (id !== undefined) {
         finalNodes.set(id, finalNodesArray[i])
@@ -298,7 +314,7 @@ class App extends Component<AppProps, AppState> {
     }
 
     // Set master node discoverable information
-    var finalMaster = cfgMaster
+    const finalMaster = cfgMaster
     finalMaster.physState = dscMaster.physState
     finalMaster.runState = dscMaster.runState
 
@@ -414,6 +430,36 @@ class App extends Component<AppProps, AppState> {
     });
   }
 
+  getGraph = (uuid: string) => {
+    fetchJsonFromUrl(graphUrlSingle(base64ToUuid(uuid)))
+      .then((graph) => {
+        if (graph === null) {
+          this.setState({
+            liveConnectionActive: 'RECONNECT',
+          })
+        } else {
+          this.setState({
+            graph: graph,
+          })
+        }
+      })
+  }
+
+  startUpdatingGraph = (uuid: string) => {
+    console.log("nodeViewOpened", uuid)
+    this.setState({
+      updatingGraph: uuid
+    })
+  }
+
+  stopUpdatingGraph = () => {
+    console.log("dashboard opened")
+    this.setState({
+      updatingGraph: undefined,
+      graph: undefined,
+    })
+  }
+
   render() {
     return (
       <HashRouter>
@@ -425,6 +471,7 @@ class App extends Component<AppProps, AppState> {
         />
         <React.Fragment>
           <Route
+            onchange={() => { console.log("route got clicked!") }}
             exact
             path="/"
             render={() => (
@@ -432,6 +479,7 @@ class App extends Component<AppProps, AppState> {
                 disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
                 masterNode={this.state.masterNode}
                 nodes={this.state.nodes}
+                opened={this.stopUpdatingGraph}
               />
             )}
           />
@@ -439,9 +487,11 @@ class App extends Component<AppProps, AppState> {
             path="/node/:uuid"
             render={(props) => (
               <NodeView
-              disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
-              cfgNode={this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))}
-              dscNode={this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))}
+                disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
+                cfgNode={this.state.cfgMaster.id === uuidToBase64(props.match.params.uuid) ? this.state.cfgMaster : this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))}
+                dscNode={this.state.dscMaster.id === uuidToBase64(props.match.params.uuid) ? this.state.dscMaster : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))}
+                opened={() => { this.startUpdatingGraph(uuidToBase64(props.match.params.uuid)) }}
+                graph={this.state.graph}
               />
             )}
           />
@@ -450,26 +500,5 @@ class App extends Component<AppProps, AppState> {
     );
   }
 }
-
-// const App: React.FC = () => {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.tsx</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
 
 export default App;

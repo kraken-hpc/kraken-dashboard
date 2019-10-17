@@ -7,6 +7,7 @@ interface DashboardProps {
   disconnected: boolean
   masterNode: Node
   nodes: Map<string, Node>
+  opened: () => void
 }
 
 export function Dashboard(props: DashboardProps) {
@@ -14,7 +15,7 @@ export function Dashboard(props: DashboardProps) {
     <div style={{ textAlign: `center`, display: `inline-block` }}>
       <Legend />
       <div className="node-area">
-        <Cluster disconnected={props.disconnected} masterNode={props.masterNode} nodes={props.nodes} />
+        <Cluster opened={props.opened} disconnected={props.disconnected} masterNode={props.masterNode} nodes={props.nodes} />
       </div>
     </div>
   );

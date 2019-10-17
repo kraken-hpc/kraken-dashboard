@@ -8,6 +8,7 @@
 }
 
 .node-detail{
+  flex-grow: 1;
   display: inline-block;
   /* top: 125px; */
   padding: 5px;
@@ -15,6 +16,7 @@
   border-radius: 10px;
   margin: 0 15px;
   text-align: left;
+  max-width: 30rem;
 }
 
 .non-bordered-detail{

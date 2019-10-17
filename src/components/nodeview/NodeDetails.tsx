@@ -7,37 +7,37 @@ interface NodeDetailsProps {
 }
 
 export const NodeDetails = (props: NodeDetailsProps) => {
-  var dscRunState = (typeof props.dscNode.runState !== 'undefined') ? props.dscNode.runState : ""
-  var cfgRunState = (typeof props.cfgNode.runState !== 'undefined') ? props.cfgNode.runState : ""
+  const dscRunState = (props.dscNode.runState !== undefined) ? props.dscNode.runState : ""
+  const cfgRunState = (props.cfgNode.runState !== undefined) ? props.cfgNode.runState : ""
 
-  var dscPhysState = (typeof props.dscNode.physState !== 'undefined') ? props.dscNode.physState : ""
-  var cfgPhysState = (typeof props.cfgNode.physState !== 'undefined') ? props.cfgNode.physState : ""
+  const dscPhysState = (props.dscNode.physState !== undefined) ? props.dscNode.physState : ""
+  const cfgPhysState = (props.cfgNode.physState !== undefined) ? props.cfgNode.physState : ""
 
-  var uuid = base64ToUuid(props.cfgNode.id)
+  const uuid = base64ToUuid(props.cfgNode.id)
 
-  var parentUuid = ""
+  let parentUuid = ""
 
-  if (props.cfgNode.parentId !== null && typeof props.cfgNode.parentId !== 'undefined') {
+  if (props.cfgNode.parentId !== null && props.cfgNode.parentId !== undefined) {
     parentUuid = base64ToUuid(props.cfgNode.parentId)
   } else {
     props.cfgNode.nodename = "Master"
   }
 
-  var arch = (typeof props.cfgNode.arch !== 'undefined') ? props.cfgNode.arch : ""
-  var platform = (typeof props.cfgNode.platform !== 'undefined') ? props.cfgNode.platform : ""
+  const arch = (props.cfgNode.arch !== undefined) ? props.cfgNode.arch : ""
+  const platform = (props.cfgNode.platform !== undefined) ? props.cfgNode.platform : ""
 
-  var nodeIdRow = NodeDetailsRow("Node ID", 0, uuid)
-  var parentIdRow = (parentUuid !== "") ? NodeDetailsRow("Parent ID", 0, parentUuid) : <React.Fragment />
-  var physStateRow = NodeDetailsRow("Physical State", 0, `${dscPhysState} / ${cfgPhysState}`)
-  var runStateRow = NodeDetailsRow("Run State", 0, `${dscRunState} / ${cfgRunState}`)
-  var archRow = (arch !== "") ? NodeDetailsRow("Architecture", 0, arch) : <React.Fragment />
-  var platformRow = (platform !== "") ? NodeDetailsRow("Platform", 0, platform) : <React.Fragment />
+  const nodeIdRow = NodeDetailsRow("Node ID", 0, uuid)
+  const parentIdRow = (parentUuid !== "") ? NodeDetailsRow("Parent ID", 0, parentUuid) : <React.Fragment />
+  const physStateRow = NodeDetailsRow("Physical State", 0, `${dscPhysState} / ${cfgPhysState}`)
+  const runStateRow = NodeDetailsRow("Run State", 0, `${dscRunState} / ${cfgRunState}`)
+  const archRow = (arch !== "") ? NodeDetailsRow("Architecture", 0, arch) : <React.Fragment />
+  const platformRow = (platform !== "") ? NodeDetailsRow("Platform", 0, platform) : <React.Fragment />
 
   // This is just for sorting the node extensions
-  var extensions = []
-  var jsxExtensions = []
+  const extensions = []
+  const jsxExtensions = []
   if (props.cfgNode.extensions !== undefined){
-    for (var i = 0; i < props.cfgNode.extensions.length; i++) {
+    for (let i = 0; i < props.cfgNode.extensions.length; i++) {
       extensions.push(props.cfgNode.extensions[i])
     }  
   }
@@ -48,17 +48,17 @@ export const NodeDetails = (props: NodeDetailsProps) => {
     return 0;
   })
   // Getting jsx versions of the extensions
-  for (i = 0; i < extensions.length; i++) {
+  for (let i = 0; i < extensions.length; i++) {
     if (Object.keys(extensions[i]).length > 1) {
       jsxExtensions.push(<GenericExtension extension={extensions[i]} key={i} />)
     }
   }
 
   // This is just for sorting the node services
-  var services = []
-  var jsxServices = []
+  const services = []
+  const jsxServices = []
   if (props.dscNode.services !== undefined){
-    for (i = 0; i < props.dscNode.services.length; i++) {
+    for (let i = 0; i < props.dscNode.services.length; i++) {
       services.push(props.dscNode.services[i])
     }  
   }
@@ -69,7 +69,7 @@ export const NodeDetails = (props: NodeDetailsProps) => {
     return 0;
   })
   // Getting jsx versions of the services
-  for (i = 0; i < services.length; i++) {
+  for (let i = 0; i < services.length; i++) {
     if (Object.keys(services[i]).length > 1) {
       jsxServices.push(<GenericService service={services[i]} key={i} />)
     }
@@ -104,11 +104,9 @@ interface GenericExtensionProps {
 }
 
 const GenericExtension = (props: GenericExtensionProps) => {
-  var extensionName = stripProtoUrl(props.extension['@type'])
-  var rows = [];
+  const extensionName = stripProtoUrl(props.extension['@type'])
+  const rows = [];
 
-  // Not sure why but the linter doesn't like the for loop
-  // eslint-disable-next-line
   for (const key of Object.keys(props.extension)) {
     if (key === "@type") {
       continue
@@ -130,11 +128,9 @@ interface GenericServiceProps {
 }
 
 const GenericService = (props: GenericServiceProps) => {
-  var serviceName = stripProtoUrl(props.service['id'])
-  var rows = [];
+  const serviceName = stripProtoUrl(props.service['id'])
+  const rows = [];
 
-  // Not sure why but the linter doesn't like the for loop
-  // eslint-disable-next-line
   for (const key of Object.keys(props.service)) {
     if (key === "id") {
       continue
@@ -153,32 +149,28 @@ const GenericService = (props: GenericServiceProps) => {
 
 const RecursiveValues = (object: any, key: string | number, depth: number): any[] => {
   depth++
-  var returnVal = []
+  const returnVal = []
   if (Array.isArray(object)) {
     returnVal.push(NodeDetailsRow(key, depth))
-    for (var i = 0; i < object.length; i++) {
+    for (let i = 0; i < object.length; i++) {
       returnVal.push(RecursiveValues(object[i], i, depth))
     }
-    // console.log(object.length)
   } else if (typeof object === "object") {
     returnVal.push(NodeDetailsRow(key, depth))
-    // Not sure why but the linter doesn't like the for loop
-    // eslint-disable-next-line
     for (const key of Object.keys(object)) {
       returnVal.push(RecursiveValues(object[key], key, depth))
     }
-  } else if (typeof object === "boolean") {
+  } else if (object === Boolean) {
     returnVal.push(NodeDetailsRow(key, depth, object.toString()))
   } else {
     returnVal.push(NodeDetailsRow(key, depth, base64Convert(key.toString(), object)))
-    // console.log("recursion:", object, "=", typeof object)
   }
 
   return returnVal
 }
 
 const NodeDetailsRow = (key: string | number, depth: number, value?: string) => {
-  var padding = ((depth - 1) * 15).toString() + 'px'
+  const padding = ((depth - 1) * 15).toString() + 'px'
 
   return (<div style={{ paddingLeft: padding }} className={`node-view-row`} key={key}>
     <span className={`node-view-key`}>{key}:</span>
