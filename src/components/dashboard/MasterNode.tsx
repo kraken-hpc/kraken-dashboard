@@ -2,7 +2,6 @@ import { NodeProps } from "./Node"
 import { stateToColor, base64ToUuid } from "../../kraken-interactions/node"
 import { Link } from "react-router-dom"
 import React from 'react'
-import "../../styles/square.css"
 
 export const MasterNode = (props: NodeProps) => {
   var physColor = stateToColor(props.data.physState)

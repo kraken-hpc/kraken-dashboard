@@ -1,18 +1,20 @@
 import React from "react";
 import { Legend } from "./Legend";
 import { Cluster } from "./Cluster";
+import { Node } from "../../kraken-interactions/node";
 
 interface DashboardProps {
-  refreshRate: number;
-  useWebSocket: boolean
+  disconnected: boolean
+  masterNode: Node
+  nodes: Map<string, Node>
 }
 
 export function Dashboard(props: DashboardProps) {
   return (
-    <div style={{textAlign: `center`, display: `inline-block`}}>
+    <div style={{ textAlign: `center`, display: `inline-block` }}>
       <Legend />
       <div className="node-area">
-        <Cluster refreshRate={props.refreshRate} useWebSocket={props.useWebSocket}/>
+        <Cluster disconnected={props.disconnected} masterNode={props.masterNode} nodes={props.nodes} />
       </div>
     </div>
   );

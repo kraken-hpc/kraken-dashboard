@@ -1,140 +1,15 @@
 import React, { Component } from "react";
-import { dscUrl, cfgUrl } from "../../config";
-import { cfgNodeFetch, dscNodeFetch, nodeSort } from "../../kraken-interactions/node";
 import { Node as NodeInterface } from "../../kraken-interactions/node";
-import { LiveConnectionType } from "../../kraken-interactions/live";
 import { MasterNode } from "./MasterNode";
 import { Node } from "./Node";
-import '../../styles/cluster.css'
 
 interface ClusterProps {
-  refreshRate: number;
-  useWebSocket: boolean;
+  disconnected: boolean
+  masterNode: NodeInterface
+  nodes: Map<string, NodeInterface>
 }
 
-export interface ClusterState {
-  masterNode: NodeInterface;
-  nodes: Map<string, NodeInterface>;
-  // cfgMaster: Node;
-  // cfgNodes: Map<string, Node>;
-  // dscMaster: Node;
-  // dscNodes: Map<string, Node>;
-  // disconnected: boolean;
-  liveConnectionActive: LiveConnectionType;
-}
-
-export class Cluster extends Component<ClusterProps, ClusterState> {
-  constructor(props: ClusterProps) {
-    super(props);
-
-    this.state = {
-      masterNode: {},
-      nodes: new Map(),
-      // cfgNodes: new Map(),
-      // cfgMaster: {},
-      // dscNodes: new Map(),
-      // dscMaster: {},
-      liveConnectionActive: props.useWebSocket ? "WEBSOCKET" : "POLLING"
-    };
-    // this.organizeNodes = this.organizeNodes.bind(this);
-    // this.cfgNodeFetch = this.cfgNodeFetch.bind(this);
-    // this.dscNodeFetch = this.dscNodeFetch.bind(this);
-    // this.liveFunction = Common.liveFunction.bind(this);
-    // this.stopLive = Common.stopLive.bind(this);
-    // this.webSocketNodeUpdate = Common.webSocketNodeUpdate.bind(this);
-    // this.closeWebSocket = Common.closeWebSocket.bind(this);
-    // this.handleWebSocketMessage = this.handleWebSocketMessage.bind(this);
-  }
-
-  componentDidMount = () => {
-    // Get cfg and dsc nodes
-    cfgNodeFetch(cfgUrl).then(cfgNodes => {
-      if (
-        cfgNodes.masterNode !== null &&
-        cfgNodes.computeNodes !== null &&
-        cfgNodes.masterNode.id !== undefined
-      ) {
-        dscNodeFetch(dscUrl, cfgNodes.masterNode.id).then(dscNodes => {
-          if (
-            dscNodes.masterNode !== null &&
-            dscNodes.computeNodes !== null &&
-            cfgNodes.masterNode !== null &&
-            cfgNodes.computeNodes !== null
-          ) {
-            this.setFinalNodes(cfgNodes.masterNode, cfgNodes.computeNodes, dscNodes.masterNode, dscNodes.computeNodes)
-          } else {
-            this.setState({
-              liveConnectionActive: "RECONNECT"
-            });
-            return;
-          }
-        });
-      } else {
-        this.setState({
-          liveConnectionActive: "RECONNECT"
-        });
-        return;
-      }
-    });
-
-    switch (this.state.liveConnectionActive) {
-      case "POLLING":
-      // Setup polling connection
-      break
-      case "WEBSOCKET":
-      // Setup websocket connection
-      break
-    }
-  };
-
-  componentDidUpdate = (prevProps: ClusterProps, prevState: ClusterState) => {
-    if (this.props.useWebSocket !== prevProps.useWebSocket) {
-      if (this.state.liveConnectionActive !== "RECONNECT") {
-        this.setState({
-          liveConnectionActive: this.props.useWebSocket
-            ? "WEBSOCKET"
-            : "POLLING"
-        });
-      }
-    }
-    if (prevState.liveConnectionActive !== this.state.liveConnectionActive) {
-      this.updateLiveConnection();
-    }
-  };
-
-  updateLiveConnection = () => { };
-
-  setFinalNodes(cfgMaster: NodeInterface, cfgNodes: Map<string, NodeInterface>, dscMaster: NodeInterface, dscNodes: Map<string, NodeInterface>) {
-    var finalNodes = new Map(cfgNodes)
-
-    finalNodes.forEach((value, key, map) => {
-      var dscNode = dscNodes.get(key)
-      if (dscNode !== undefined) {
-        value.physState = dscNode.physState
-        value.runState = dscNode.runState
-      }
-    })
-
-    // Sort the Map
-    var finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
-    finalNodes = new Map()
-    for (var i = 0; i < finalNodesArray.length; i++) {
-      const id = finalNodesArray[i].id
-      if (id !== undefined){
-        finalNodes.set(id, finalNodesArray[i])
-      }
-    }
-
-    // Set master node discoverable information
-    var finalMaster = cfgMaster
-    finalMaster.physState = dscMaster.physState
-    finalMaster.runState = dscMaster.runState
-
-    this.setState({
-      masterNode: finalMaster,
-      nodes: finalNodes,
-    })
-  }
+export class Cluster extends Component<ClusterProps> {
 
   stateCount = (nodes: Map<string, NodeInterface>) => {
     var unknownCount = 0;
@@ -167,10 +42,10 @@ export class Cluster extends Component<ClusterProps, ClusterState> {
 
   render() {
     // console.log("render", Array.from(this.state.nodes.values()))
-    var counts = this.stateCount(this.state.nodes);
+    var counts = this.stateCount(this.props.nodes);
     return (
       <React.Fragment>
-        {this.state.liveConnectionActive === 'RECONNECT' && (
+        {this.props.disconnected && (
           <h2
             style={{
               textAlign: "center",
@@ -181,14 +56,14 @@ export class Cluster extends Component<ClusterProps, ClusterState> {
             Disconnected From Kraken
           </h2>
         )}
-        {this.state.nodes.size === 0 &&
-          typeof this.state.masterNode.id === "undefined" ? (
+        {this.props.nodes.size === 0 &&
+          typeof this.props.masterNode.id === "undefined" ? (
             <h3 style={{ fontFamily: "Arial" }}>Loading...</h3>
           ) : (
             <div className="cluster">
-              <MasterNode data={this.state.masterNode} />
+              <MasterNode data={this.props.masterNode} />
               <div className="cluster-nodelist">
-                {Array.from(this.state.nodes.values()).map(node => {
+                {Array.from(this.props.nodes.values()).map(node => {
                   return <Node data={node} key={node.id} />;
                 })}
               </div>

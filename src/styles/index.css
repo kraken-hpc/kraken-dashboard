@@ -18,7 +18,9 @@
   --border-gray: #7a7a7a;
 }
 
-
+#root {
+  text-align: center;
+}
 
 body {
   margin: 0;

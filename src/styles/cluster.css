@@ -8,6 +8,7 @@
 }
 
 .cluster{
+  display: inline-block;
   justify-content: center;
   padding: 10px;
   margin: 10px 0;
@@ -23,4 +24,14 @@
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: left;
+}
+
+.counts_area {
+  display: block;
+}
+
+.counts {
+  display: inline-block;
+  margin: 5px;
+  font-family: Arial, Helvetica, sans-serif;
 }

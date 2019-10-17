@@ -1,5 +1,4 @@
 import React from "react";
-import "../../styles/legend.css";
 import { COLORS } from "../../config";
 
 export function Legend() {

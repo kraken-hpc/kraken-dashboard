@@ -198,7 +198,7 @@ export const base64ToUuid = (base64: string | undefined): string => {
 }
 
 // Takes in a uuid string and converts it to a base64 string
-const uuidToBase64 = (uuid: string): string => {
+export const uuidToBase64 = (uuid: string): string => {
   var noDash = uuid.replace(/-/g, '')
   return HEXtoBase64(noDash)
 }
