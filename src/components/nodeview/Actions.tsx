@@ -9,7 +9,7 @@ interface ActionProps{
 
 export const Actions = (props: ActionProps) => {
   return (
-    <div className={`actions-area ${props.cfgNode.parentId === undefined ? 'hidden' : ''}`}>
+    <div className={`actions-area`} style={{display: props.cfgNode.parentId === undefined ? `none` : ``}}>
       <div
         className={`button green`}
         onClick={() => { powerOnNode(props.cfgNode) }}
