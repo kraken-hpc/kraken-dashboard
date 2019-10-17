@@ -1,0 +1,6 @@
+@import './nodedetails.css';
+
+.node-view{
+  display: inline-block;
+  /* width: 100%; */
+}

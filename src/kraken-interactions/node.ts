@@ -212,7 +212,7 @@ const base64ToMac = (base64: string): string => {
 }
 
 // Takes in a key value pair and determines if it needs to be converted to a special formatted string. Used in RecursiveValues()
-const Base64Convert = (key: string, value: string) => {
+export const base64Convert = (key: string, value: string) => {
   switch (true) {
     case key.includes("ip"):
       return base64ToIP(value)
@@ -226,6 +226,6 @@ const Base64Convert = (key: string, value: string) => {
 }
 
 // Strips the leading string of the protobuf urls
-const StripProtoUrl = (url: string) => {
+export const stripProtoUrl = (url: string) => {
   return url.replace('type.googleapis.com/proto.', '')
 }

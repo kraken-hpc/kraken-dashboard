@@ -10,7 +10,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import CSS from "csstype";
-import { COLORS } from "../config";
+import { COLORS } from "../../config";
 
 interface HeaderProps {
   refreshRate: number;

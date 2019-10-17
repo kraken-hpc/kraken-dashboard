@@ -1,17 +1,18 @@
 import './styles/index.css'
-import './styles/header.css'
-import './styles/cluster.css'
-import './styles/legend.css'
 import './styles/square.css'
+import './components/header/styles/header.css'
+import './components/dashboard/styles/dashboard.css'
+import './components/nodeview/styles/nodeview.css'
 
 import React, { Component } from "react";
 import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl } from "./config";
 import { HashRouter, Route } from "react-router-dom";
-import { Header } from "./components/Header";
+import { Header } from "./components/header/Header";
 import { Dashboard } from "./components/dashboard/Dashboard";
 import { Node, dscNodeFetch, uuidToBase64, nodeSort, cfgNodeFetch } from "./kraken-interactions/node"
 import { LiveConnectionType } from "./kraken-interactions/live";
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
+import {NodeView} from './components/nodeview/NodeView'
 
 interface AppProps { }
 
@@ -434,17 +435,16 @@ class App extends Component<AppProps, AppState> {
               />
             )}
           />
-          {/* <Route
+          <Route
             path="/node/:uuid"
-            render={props => (
+            render={(props) => (
               <NodeView
-                {...props}
-                refreshRate={this.state.refreshRate}
-                changeRefresh={this.changeRefresh}
-                websocket={this.state.websocket}
+              disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
+              cfgNode={this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))}
+              dscNode={this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))}
               />
             )}
-          /> */}
+          />
         </React.Fragment>
       </HashRouter>
     );

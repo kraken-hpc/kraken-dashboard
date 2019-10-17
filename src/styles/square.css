@@ -16,3 +16,12 @@
   font-size: 1.2rem;
   text-decoration: none;
 }
+
+.large-square {
+  display: inline-block;
+  border: 50px solid;
+  margin: 35px 10px;
+  border-radius: 9px;
+  float: left;
+  position: relative;
+}

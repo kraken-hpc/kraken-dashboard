@@ -3,6 +3,7 @@
 .header {
   width: 100%;
   padding: 10px;
+  box-sizing: border-box;
   justify-content: center;
   text-align: center;
   margin: 0 0 20px 0;

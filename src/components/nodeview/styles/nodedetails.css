@@ -1,0 +1,97 @@
+.node-title{
+  text-align: center;
+  margin: 0;
+  padding: 0 0 5px 0;
+  display: block;
+  border-bottom: medium solid black;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.node-detail{
+  display: inline-block;
+  /* top: 125px; */
+  padding: 5px;
+  /* border: medium solid #7a7a7a; */
+  border-radius: 10px;
+  margin: 0 15px;
+  text-align: left;
+}
+
+.non-bordered-detail{
+  position: relative;
+  margin: 15px 25px 10px 25px;
+  text-align: left;
+  display: block;
+
+}
+
+.bordered-detail{
+  /* top: 125px; */
+  position: relative;
+  padding: 12px 7px 2px 7px;
+  border: medium solid var(--border-gray);
+  border-radius: 10px;
+  margin: 20px 15px;
+  text-align: left;
+  display: block;
+}
+
+.info-title{
+  position: absolute;
+  top: -18px;
+  left: 5px;
+  padding: 5px 5px 3px 5px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  background-color: white;
+  border: medium solid var(--border-gray);
+  border-radius: 8px;
+}
+
+.node-view-row{
+  position: relative;
+  display: block;
+  margin: 5px 2px;
+}
+
+.node-view-key{
+  position: relative;
+  margin: 0 0 0 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.node-view-value{
+  position: relative;
+  margin: 0 0 0 10px;
+  font-family: Arial, Helvetica, sans-serif;
+  display: inline-block;
+}
+
+.actions-area{
+  float: right;
+}
+
+.node-graph{
+  display: block;
+  width: auto;
+  height: 100%;
+  border: black;
+  border-radius: 8px;
+}
+
+.graph-area{
+  transition: all 0.1s ease-out;
+  position: fixed;
+  left: 2rem;
+  right: 2rem;
+  height: 93%;
+  top: 2rem;
+  /* margin: 1rem 0 0 0; */
+  font-family: Arial, Helvetica, sans-serif;
+  z-index: 1;
+  background-color: white;
+  border: medium solid var(--border-gray);
+  border-radius: 10px;
+}
