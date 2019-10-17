@@ -446,14 +446,12 @@ class App extends Component<AppProps, AppState> {
   }
 
   startUpdatingGraph = (uuid: string) => {
-    console.log("nodeViewOpened", uuid)
     this.setState({
       updatingGraph: uuid
     })
   }
 
   stopUpdatingGraph = () => {
-    console.log("dashboard opened")
     this.setState({
       updatingGraph: undefined,
       graph: undefined,

@@ -1,8 +1,11 @@
 export const KRAKEN_IP = '192.168.57.10:3141'
 // export var KRAKEN_IP = '10.15.247.252:3141'
 // export var KRAKEN_IP = '127.0.0.1:3141'
+
+// Polling and Reconnecting refresh rate (time in seconds between pulls)
 export const REFRESH = 0.4
-export const WEBSOCKET = true
+// Should websocket be turned on by default?
+export const WEBSOCKET = false
 
 
 export const dscUrl:string = `http://${KRAKEN_IP}/dsc/nodes`
