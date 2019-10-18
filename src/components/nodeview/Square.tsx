@@ -1,7 +1,7 @@
 import React from 'react'
-import {stateToColor, Node} from '../../kraken-interactions/node'
+import { stateToColor, Node } from '../../kraken-interactions/node'
 
-interface SquareProps{
+interface SquareProps {
   cfgNode: Node
   dscNode: Node
 }
@@ -12,7 +12,11 @@ export const Square = (props: SquareProps) => {
   return (
     <div
       className={`large-square`}
-      style={{ borderTopColor: physColor, borderRightColor: runColor, borderBottomColor: runColor, borderLeftColor: physColor }}
-    ></div>
+      style={{
+        borderTopColor: physColor,
+        borderRightColor: runColor,
+        borderBottomColor: runColor,
+        borderLeftColor: physColor,
+      }}></div>
   )
 }
