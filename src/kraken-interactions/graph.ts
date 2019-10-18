@@ -10,23 +10,23 @@ interface Node {
   color: NodeColor
 }
 
-interface NodeColor extends Highlight{
+interface NodeColor extends Highlight {
   highlight: Highlight
 }
 
-interface Highlight{
+interface Highlight {
   background: string
   border: string
 }
 
-interface Edge{
+interface Edge {
   id: string
   to: string
   from: string
   color: EdgeColor
 }
 
-interface EdgeColor{
+interface EdgeColor {
   color: string
   highlight: string
 }

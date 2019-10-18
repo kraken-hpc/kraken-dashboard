@@ -24,8 +24,8 @@ The only requirements for kraken-dashboard are nodejs and yarn. Once these are i
 ## Configuration
 All configuration settings are in `src/config.ts`. Here you can change the ip address of your kraken instance so the dashboard will poll information from the correct ip. You can also set the default refresh rate here.
 ```
-export var KRAKEN_IP = '192.168.57.10:3141'
-export var REFRESH = 0.5
+export const KRAKEN_IP = '192.168.57.10:3141'
+export const REFRESH = 0.5
 ```
 
 ---

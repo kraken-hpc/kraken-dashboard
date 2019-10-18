@@ -1,9 +1,8 @@
-import React, { Component, createRef, RefObject } from 'react';
+import React, { Component, createRef, RefObject } from 'react'
 import vis from 'vis-network'
-import { Graph } from '../../kraken-interactions/graph';
-import { COLORS } from '../../config';
-import CSS from "csstype";
-
+import { Graph } from '../../kraken-interactions/graph'
+import { COLORS } from '../../config'
+import CSS from 'csstype'
 
 interface NodeGraphProps {
   graphOpen: boolean
@@ -48,7 +47,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
           to: {
             enabled: true,
             scaleFactor: 1.5,
-          }
+          },
         },
         color: {
           inherit: false,
@@ -61,25 +60,24 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
           gravitationalConstant: -50000,
         },
       },
-      height: "100%",
-      width: "100%",
+      height: '100%',
+      width: '100%',
     }
-
 
     this.state = {
       data: data,
       options: options,
       style: {
-        opacity: (this.props.graphOpen) ? 100 : 0,
-        visibility: (this.props.graphOpen) ? "visible" : "hidden",
+        opacity: this.props.graphOpen ? 100 : 0,
+        visibility: this.props.graphOpen ? 'visible' : 'hidden',
       },
     }
   }
 
   componentDidMount() {
-    if (this.appRef !== undefined){
+    if (this.appRef !== undefined) {
       const network = new vis.Network(this.appRef.current, this.state.data, this.state.options)
-      network.fit(this.state.options)  
+      network.fit(this.state.options)
     }
   }
 
@@ -87,9 +85,9 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
     if (this.props.graphOpen !== prevProps.graphOpen) {
       this.setState({
         style: {
-          opacity: (this.props.graphOpen) ? 100 : 0,
-          visibility: (this.props.graphOpen) ? "visible" : "hidden",
-        }
+          opacity: this.props.graphOpen ? 100 : 0,
+          visibility: this.props.graphOpen ? 'visible' : 'hidden',
+        },
       })
     }
 
@@ -115,18 +113,21 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
 
   render() {
     return (
-      <div
-        style={this.state.style}
-        className={`graph-area`}>
+      <div style={this.state.style} className={`graph-area`}>
         <div
-          className="close-button"
-          onClick={() => { this.props.graphToggle() }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24"><path fill="None" d="M0 0h24v24H0V0z" /><path fill={COLORS.grey} d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" /></svg>
+          className='close-button'
+          onClick={() => {
+            this.props.graphToggle()
+          }}>
+          <svg xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 24 24'>
+            <path fill='None' d='M0 0h24v24H0V0z' />
+            <path
+              fill={COLORS.grey}
+              d='M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z'
+            />
+          </svg>
         </div>
-        <div
-          className={`node-graph`}
-          ref={this.appRef}
-        />
+        <div className={`node-graph`} ref={this.appRef} />
         {/* <div
           ref={this.configRef} /> */}
       </div>
