@@ -225,6 +225,12 @@ class App extends Component<AppProps, AppState> {
         })
       }
     })
+    .catch((reason) => {
+      console.warn("Could not establish a websocket connection. Falling back to polling mode")
+      this.setState({
+        useWebSocket: false
+      })
+    })
   }
 
   handleWebSocketMessage = (jsonData: any) => {

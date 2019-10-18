@@ -231,7 +231,6 @@ export const stripProtoUrl = (url: string) => {
 
 // Sends a PUT command to set data for a node (Used for power off and power on)
 export const putNode = (url: string, data: Node, callback?: () => void) => {
-  console.log("body:", JSON.stringify(data))
   return fetch(url, {
     headers: { 'Content-Type': 'application/json' },
     method: 'PUT',
