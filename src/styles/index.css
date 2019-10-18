@@ -1,0 +1,43 @@
+/* Global Colors */
+:root {
+  --yellow: #f2cf66;
+  --red: #e74c3c;
+  --dark-red: #CE3323;
+  --light-red: #FF6656;
+  --grey: #a5a5a5;
+  --purple: #6a51ba;
+  --dark-purple: #4d3796;
+  --light-purple: #7864b8;
+  --green: #89CA78;
+  --dark-green: #6fa561;
+  --light-green: #90d87d;
+  --blue: #509EE8;
+  --black: #000000;
+  --title-red: #FF6656;
+  --title-yellow: #ffeead;
+  --border-gray: #7a7a7a;
+}
+
+#root {
+  text-align: center;
+}
+
+body {
+  margin: 0;
+  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale; */
+}
+
+/* code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+} */
+
+h2{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.35rem;
+  margin: 5px;
+}

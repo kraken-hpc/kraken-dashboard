@@ -1,0 +1,54 @@
+.actions-area{
+  /* float: right; */
+}
+
+/* buttons */
+.button {
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 20px;
+  text-decoration: none;
+  margin: 30px 10px;
+  color: white;
+  position: relative;
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+
+.button:active {
+  transform: translate(0px, 5px);
+  -webkit-transform: translate(0px, 5px);
+  box-shadow: 0px 1px 0px 0px;
+}
+
+div .red {
+  background-color: var(--red);
+  box-shadow: 0px 5px 0px 0px var(--dark-red);
+}
+
+div .red:hover {
+  background-color: var(--light-red);
+}
+
+div .green {
+  background-color: var(--green);
+  box-shadow: 0px 5px 0px 0px var(--dark-green);
+}
+
+div .green:hover {
+  background-color: var(--light-green);
+}
+
+div .purple {
+  background-color: var(--purple);
+  box-shadow: 0px 5px 0px 0px var(--dark-purple);
+}
+
+div .purple:hover {
+  background-color: var(--light-purple);
+}
+
+#graph-button {
+  padding: 0;
+} 
