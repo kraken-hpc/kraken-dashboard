@@ -64,6 +64,7 @@
     ],
     "directories": {
       "buildResources": "assets"
-    }
+    },
+    "icon":"build/icons/android-chrome-512x512.png"
   }
 }

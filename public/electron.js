@@ -18,6 +18,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
     },
+    icon: './favicon.png'
   })
 
   // and load the index.html of the app.
