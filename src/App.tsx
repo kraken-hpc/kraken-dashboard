@@ -158,7 +158,12 @@ class App extends Component<AppProps, AppState> {
         ) {
           const valErr = this.validateNodes(this.state.cfgMaster, this.state.cfgNodes, dscNodes.masterNode, dscNodes.computeNodes)
           if (valErr === null) {
-            this.setFinalNodes(this.state.cfgMaster, this.state.cfgNodes, dscNodes.masterNode, dscNodes.computeNodes)
+            let graphCallBack = undefined
+            const graphNodeId = this.state.updatingGraph
+            if (graphNodeId !== undefined) {
+              graphCallBack = () => { this.getGraph(graphNodeId) }
+            }
+            this.setFinalNodes(this.state.cfgMaster, this.state.cfgNodes, dscNodes.masterNode, dscNodes.computeNodes, graphCallBack)
           } else {
             this.setState({
               liveConnectionActive: 'REFETCH'
@@ -225,12 +230,12 @@ class App extends Component<AppProps, AppState> {
         })
       }
     })
-    .catch((reason) => {
-      console.warn("Could not establish a websocket connection. Falling back to polling mode")
-      this.setState({
-        useWebSocket: false
+      .catch((reason) => {
+        console.warn("Could not establish a websocket connection. Falling back to polling mode")
+        this.setState({
+          useWebSocket: false
+        })
       })
-    })
   }
 
   handleWebSocketMessage = (jsonData: any) => {
