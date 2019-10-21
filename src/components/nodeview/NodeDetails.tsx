@@ -166,7 +166,7 @@ const RecursiveValues = (object: any, key: string | number, depth: number): any[
   } else if (object === Boolean) {
     returnVal.push(NodeDetailsRow(key, depth, object.toString()))
   } else {
-    returnVal.push(NodeDetailsRow(key, depth, base64Convert(key.toString(), object)))
+    returnVal.push(NodeDetailsRow(key, depth, base64Convert(key.toString(), object.toString())))
   }
 
   return returnVal
