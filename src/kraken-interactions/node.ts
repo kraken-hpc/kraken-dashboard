@@ -177,7 +177,12 @@ const HEXtoBase64 = (hex: string): string => {
 
 // Takes in a base64 number and converts it to an ip address string
 const base64ToIP = (base64: string): string => {
-  const raw = atob(base64)
+  let raw = ''
+  try {
+    raw = atob(base64)
+  } catch (error) {
+    return base64
+  }
   let DEC = ''
   for (let i = 0; i < raw.length; i++) {
     const _dec = raw.charCodeAt(i).toString(10)
