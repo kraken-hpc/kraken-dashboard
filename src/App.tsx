@@ -58,6 +58,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   componentDidUpdate = (prevProps: AppProps, prevState: AppState) => {
+    // If the websocket checkbox has changed
     if (this.state.useWebSocket !== prevState.useWebSocket) {
       if (this.state.liveConnectionActive !== 'RECONNECT') {
         this.setState({
@@ -66,10 +67,12 @@ class App extends Component<AppProps, AppState> {
       }
     }
 
+    // If we just started updating the graph, get the graph
     if (this.state.updatingGraph !== prevState.updatingGraph && this.state.updatingGraph !== undefined) {
       this.getGraph(this.state.updatingGraph)
     }
 
+    // If refresh rate has changed, restart the live connection
     if (this.state.refreshRate !== prevState.refreshRate) {
       switch (this.state.liveConnectionActive) {
         case 'POLLING':
@@ -103,6 +106,7 @@ class App extends Component<AppProps, AppState> {
           this.startPolling()
           break
         case 'WEBSOCKET':
+          this.refetch()
           this.startWebSocket()
           break
         case 'RECONNECT':
@@ -238,8 +242,15 @@ class App extends Component<AppProps, AppState> {
           })
         }
       })
-      .catch(reason => {
-        console.warn('Could not establish a websocket connection. Falling back to polling mode')
+      .catch((reason: Error) => {
+        if (reason.message === 'The operation is insecure.') {
+          console.warn('Could not establish a websocket connection:', reason)
+          this.setState({
+            liveConnectionActive: 'RECONNECT',
+          })
+          return
+        }
+        console.warn('Could not establish a websocket connection. Falling back to polling mode. Error:', reason)
         this.setState({
           useWebSocket: false,
         })

@@ -44,7 +44,7 @@ export class NodeView extends Component<NodeViewProps, NodeViewState> {
           <h2 style={{ textAlign: 'center', fontFamily: 'Arial', color: 'maroon' }}>Disconnected From Kraken</h2>
         )}
         {this.props.cfgNode === undefined || this.props.dscNode === undefined ? (
-          <h3 style={{ fontFamily: 'Arial' }}>Loading...</h3>
+          <h3 style={{ fontFamily: 'Arial' }}>Node Does Not Exist</h3>
         ) : (
           <React.Fragment>
             <div className={`node-view`}>
