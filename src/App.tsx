@@ -542,7 +542,9 @@ class App extends Component<AppProps, AppState> {
                     : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))
                 }
                 opened={() => {
-                  this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))
+                  if (uuidToBase64(props.match.params.uuid) !== this.state.masterNode.id) {
+                    this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))
+                  }
                 }}
                 graph={this.state.graph}
               />

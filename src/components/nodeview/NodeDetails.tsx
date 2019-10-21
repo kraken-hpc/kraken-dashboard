@@ -61,9 +61,9 @@ export const NodeDetails = (props: NodeDetailsProps) => {
   // This is just for sorting the node services
   const services = []
   const jsxServices = []
-  if (props.dscNode.services !== undefined) {
-    for (let i = 0; i < props.dscNode.services.length; i++) {
-      services.push(props.dscNode.services[i])
+  if (props.cfgNode.services !== undefined) {
+    for (let i = 0; i < props.cfgNode.services.length; i++) {
+      services.push(props.cfgNode.services[i])
     }
   }
   // Sorting the services by name
@@ -131,7 +131,7 @@ interface GenericServiceProps {
 }
 
 const GenericService = (props: GenericServiceProps) => {
-  const serviceName = stripProtoUrl(props.service['id'])
+  const serviceName = stripProtoUrl(props.service.id)
   const rows = []
 
   for (const key of Object.keys(props.service)) {
