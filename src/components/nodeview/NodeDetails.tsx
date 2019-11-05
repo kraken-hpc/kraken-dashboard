@@ -1,5 +1,6 @@
 import React from 'react'
 import { Node, base64ToUuid, stripProtoUrl, base64Convert } from '../../kraken-interactions/node'
+import { string } from 'prop-types'
 
 interface NodeDetailsProps {
   cfgNode: Node
@@ -33,55 +34,11 @@ export const NodeDetails = (props: NodeDetailsProps) => {
   const archRow = arch !== '' ? NodeDetailsRow('Architecture', 0, arch) : <React.Fragment />
   const platformRow = platform !== '' ? NodeDetailsRow('Platform', 0, platform) : <React.Fragment />
 
-  // This is just for sorting the node extensions
-  const extensions = []
-  const jsxExtensions = []
-  if (props.cfgNode.extensions !== undefined) {
-    for (let i = 0; i < props.cfgNode.extensions.length; i++) {
-      extensions.push(props.cfgNode.extensions[i])
-    }
-  }
-  // Sorting the extensions by name
-  extensions.sort(function(a, b) {
-    if (stripProtoUrl(a['@type']) < stripProtoUrl(b['@type'])) {
-      return -1
-    }
-    if (stripProtoUrl(a['@type']) > stripProtoUrl(b['@type'])) {
-      return 1
-    }
-    return 0
-  })
-  // Getting jsx versions of the extensions
-  for (let i = 0; i < extensions.length; i++) {
-    if (Object.keys(extensions[i]).length > 1) {
-      jsxExtensions.push(<GenericExtension extension={extensions[i]} key={i} />)
-    }
-  }
+  // Combine cfg and dsc node extensions (dsc takes priority)
+  const jsxExtensions = getExtSrvs(props.cfgNode.extensions, props.dscNode.extensions, '@type')
 
-  // This is just for sorting the node services
-  const services = []
-  const jsxServices = []
-  if (props.cfgNode.services !== undefined) {
-    for (let i = 0; i < props.cfgNode.services.length; i++) {
-      services.push(props.cfgNode.services[i])
-    }
-  }
-  // Sorting the services by name
-  services.sort(function(a, b) {
-    if (stripProtoUrl(a['id']) < stripProtoUrl(b['id'])) {
-      return -1
-    }
-    if (stripProtoUrl(a['id']) > stripProtoUrl(b['id'])) {
-      return 1
-    }
-    return 0
-  })
-  // Getting jsx versions of the services
-  for (let i = 0; i < services.length; i++) {
-    if (Object.keys(services[i]).length > 1) {
-      jsxServices.push(<GenericService service={services[i]} key={i} />)
-    }
-  }
+  // Combine cfg and dsc node services (dsc takes priority)
+  const jsxServices = getExtSrvs(props.cfgNode.services, props.dscNode.services, 'id')
 
   return (
     <div className={`node-detail`}>
@@ -102,52 +59,78 @@ export const NodeDetails = (props: NodeDetailsProps) => {
   )
 }
 
-interface GenericExtensionProps {
-  extension: any
-}
+const getExtSrvs = (cfg: any[] | undefined, dsc: any[] | undefined, id: string): JSX.Element[] => {
+  const map: Map<string, any> = new Map()
 
-const GenericExtension = (props: GenericExtensionProps) => {
-  const extensionName = stripProtoUrl(props.extension['@type'])
-  const rows = []
-
-  for (const key of Object.keys(props.extension)) {
-    if (key === '@type') {
-      continue
-    } else {
-      rows.push(RecursiveValues(props.extension[key], key, 0))
+  if (cfg !== undefined) {
+    for (let i = 0; i < cfg.length; i++) {
+      map.set(cfg[i][id], cfg[i])
     }
   }
 
-  return (
-    <div className={`bordered-detail`}>
-      <div className={`info-title`}>{extensionName}</div>
-      {rows}
-    </div>
-  )
-}
-
-interface GenericServiceProps {
-  service: any
-}
-
-const GenericService = (props: GenericServiceProps) => {
-  const serviceName = stripProtoUrl(props.service.id)
-  const rows = []
-
-  for (const key of Object.keys(props.service)) {
-    if (key === 'id') {
-      continue
-    } else {
-      rows.push(RecursiveValues(props.service[key], key, 0))
+  if (dsc !== undefined) {
+    for (let i = 0; i < dsc.length; i++) {
+      const obj = map.get(dsc[i][id])
+      if (obj !== undefined) {
+        const merged = { ...obj, ...dsc[i] }
+        map.set(obj[id], merged)
+      } else {
+        map.set(dsc[i][id], dsc[i])
+      }
     }
   }
 
-  return (
-    <div className={`bordered-detail`}>
-      <div className={`info-title`}>{serviceName}</div>
-      {rows}
-    </div>
-  )
+  const array = Array.from(map.values())
+  const jsx: JSX.Element[] = []
+
+  // Sorting the extensions by name
+  array.sort((a, b) => {
+    if (stripProtoUrl(a[id]) < stripProtoUrl(b[id])) {
+      return -1
+    }
+    if (stripProtoUrl(a[id]) > stripProtoUrl(b[id])) {
+      return 1
+    }
+    return 0
+  })
+  // Getting jsx versions of the extensions
+  for (let i = 0; i < array.length; i++) {
+    jsx.push(<GenericExtSrv extSrv={array[i]} key={i} id={id} />)
+  }
+  return jsx
+}
+
+interface GenericExtSrvProps {
+  extSrv: any
+  id: string
+}
+
+const GenericExtSrv = (props: GenericExtSrvProps) => {
+  const extensionName = stripProtoUrl(props.extSrv[props.id])
+  const rows = []
+
+  for (const key of Object.keys(props.extSrv)) {
+    if (key === props.id) {
+      continue
+    } else {
+      rows.push(RecursiveValues(props.extSrv[key], key, 0))
+    }
+  }
+
+  if (rows.length === 0) {
+    return (
+      <div>
+        <div className={`info-title-single`}>{extensionName}</div>
+      </div>
+    )
+  } else {
+    return (
+      <div className={`bordered-detail`}>
+        <div className={`info-title`}>{extensionName}</div>
+        {rows}
+      </div>
+    )
+  }
 }
 
 const RecursiveValues = (object: any, key: string | number, depth: number): any[] => {
