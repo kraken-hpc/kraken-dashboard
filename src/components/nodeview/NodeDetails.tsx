@@ -110,7 +110,7 @@ const GenericExtSrv = (props: GenericExtSrvProps) => {
   const rows = []
 
   for (const key of Object.keys(props.extSrv)) {
-    if (key === '@type') {
+    if (key === props.id) {
       continue
     } else {
       rows.push(RecursiveValues(props.extSrv[key], key, 0))
@@ -118,7 +118,11 @@ const GenericExtSrv = (props: GenericExtSrvProps) => {
   }
 
   if (rows.length === 0) {
-    return <div className={`info-title-single`}>{extensionName}</div>
+    return (
+      <div>
+        <div className={`info-title-single`}>{extensionName}</div>
+      </div>
+    )
   } else {
     return (
       <div className={`bordered-detail`}>
