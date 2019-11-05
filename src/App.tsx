@@ -93,7 +93,9 @@ class App extends Component<AppProps, AppState> {
           this.stopPolling()
           break
         case 'WEBSOCKET':
-          this.stopWebSocket()
+          if (this.state.liveConnectionActive !== 'REFETCH') {
+            this.stopWebSocket()
+          }
           break
         case 'RECONNECT':
           this.stopReconnect()
@@ -106,8 +108,7 @@ class App extends Component<AppProps, AppState> {
           this.startPolling()
           break
         case 'WEBSOCKET':
-          this.refetch()
-          this.startWebSocket()
+          this.startWebSocket(this.refetch)
           break
         case 'RECONNECT':
           this.startReconnect()
@@ -203,7 +204,7 @@ class App extends Component<AppProps, AppState> {
     this.websocket = undefined
   }
 
-  startWebSocket = () => {
+  startWebSocket = (connectedCallBack: () => void) => {
     if (this.websocket !== undefined) {
       console.warn('Websocket already connected, refusing to create another')
       return
@@ -216,9 +217,10 @@ class App extends Component<AppProps, AppState> {
         this.websocket.onopen = () => {
           console.log('WebSocket Connected')
           if (this.websocket !== undefined) {
-            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 1 })) // Subscribe to state_change events
-            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 2 })) // Subscribe to mututation events
-            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 5 })) // Subscribe to discovery events
+            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_CHANGE' }))
+            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_MUTATION' }))
+            this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'DISCOVERY' }))
+            connectedCallBack()
           } else {
             console.warn('Websocket is somehow undefined')
             this.setState({
@@ -298,10 +300,25 @@ class App extends Component<AppProps, AppState> {
                 // newNodes.set(base64Id, newNode)
                 break
               case '/RunState':
-                newNode.runState = jsonMessage.value
-                newDscNode.runState = jsonMessage.value
-                // newNodes.set(base64Id, newNode)
-                break
+                if (
+                  jsonMessage.value !== 'UNKNOWN' &&
+                  (newNode.physState === 'UNKNOWN' ||
+                    newNode.physState === 'POWER_OFF' ||
+                    newNode.physState === 'PHYS_HANG')
+                ) {
+                  console.log(
+                    "Tried to change node's runstate while phystate is unknown. Closing websocket and pulling dsc and cfg nodes"
+                  )
+                  this.setState({
+                    liveConnectionActive: 'REFETCH',
+                  })
+                  break
+                } else {
+                  newNode.runState = jsonMessage.value
+                  newDscNode.runState = jsonMessage.value
+                  // newNodes.set(base64Id, newNode)
+                  break
+                }
               default:
                 break
             }
