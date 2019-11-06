@@ -1,6 +1,5 @@
 import React from 'react'
 import { Node, base64ToUuid, stripProtoUrl, base64Convert } from '../../kraken-interactions/node'
-import { string } from 'prop-types'
 
 interface NodeDetailsProps {
   cfgNode: Node
@@ -29,8 +28,8 @@ export const NodeDetails = (props: NodeDetailsProps) => {
 
   const nodeIdRow = NodeDetailsRow('Node ID', 0, uuid)
   const parentIdRow = parentUuid !== '' ? NodeDetailsRow('Parent ID', 0, parentUuid) : <React.Fragment />
-  const physStateRow = NodeDetailsRow('Physical State', 0, `${dscPhysState} / ${cfgPhysState}`)
-  const runStateRow = NodeDetailsRow('Run State', 0, `${dscRunState} / ${cfgRunState}`)
+  const physStateRow = NodeDetailsCfgDscRow('Physical State', cfgPhysState, dscPhysState)
+  const runStateRow = NodeDetailsCfgDscRow('Run State', cfgRunState, dscRunState)
   const archRow = arch !== '' ? NodeDetailsRow('Architecture', 0, arch) : <React.Fragment />
   const platformRow = platform !== '' ? NodeDetailsRow('Platform', 0, platform) : <React.Fragment />
 
@@ -162,6 +161,24 @@ const NodeDetailsRow = (key: string | number, depth: number, value?: string) => 
     <div style={{ paddingLeft: padding }} className={`node-view-row`} key={key}>
       <span className={`node-view-key`}>{key}:</span>
       <span className={`node-view-value`}>{value}</span>
+    </div>
+  )
+}
+
+const NodeDetailsCfgDscRow = (title: string, cfgValue: string, dscValue: string) => {
+  return (
+    <div className={`cfg-dsc-row`} key={title}>
+      <div className={`cfg-dsc-title`}>{title}:</div>
+      <div className={`cfg-dsc-value-row`}>
+        <div className={`cfg-dsc-value-container`}>
+          <div className={`cfg-dsc-key`}>CFG:</div>
+          <div className={`cfg-dsc-value`}>{cfgValue}</div>
+        </div>
+        <div className={`cfg-dsc-value-container`}>
+          <div className={`cfg-dsc-key`}>DSC:</div>
+          <div className={`cfg-dsc-value`}>{dscValue}</div>
+        </div>
+      </div>
     </div>
   )
 }

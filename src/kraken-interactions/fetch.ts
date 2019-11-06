@@ -3,7 +3,7 @@ import { Node } from './node'
 // Fetches a json list of nodes from a url
 export const fetchNodeListFromUrl = async (url: string): Promise<Node[] | null> => {
   const data = await fetch(url).catch(error => {
-    // console.warn("Error during fetchNodeListFromUrl:", error);
+    // console.warn('Error during fetchNodeListFromUrl:', error)
     return null
   })
   if (data !== null) {
@@ -11,6 +11,17 @@ export const fetchNodeListFromUrl = async (url: string): Promise<Node[] | null> 
     return json.nodes
   } else {
     return null
+  }
+}
+
+export const fetchAllNodesFromUrls = async (cfgUrl: string, dscUrl: string): Promise<[Node[], Node[]] | null> => {
+  const [cfgData, dscData] = await Promise.all([fetch(cfgUrl), fetch(dscUrl)])
+  if (cfgData === null || dscData === null) {
+    return null
+  } else {
+    const cfgNodes = await cfgData.json()
+    const dscNodes = await dscData.json()
+    return [cfgNodes.nodes, dscNodes.nodes]
   }
 }
 

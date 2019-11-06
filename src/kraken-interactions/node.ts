@@ -1,4 +1,4 @@
-import { fetchNodeListFromUrl } from './fetch'
+import { fetchNodeListFromUrl, fetchAllNodesFromUrls } from './fetch'
 import { COLORS, cfgUrlSingle, dscUrlSingle } from '../config'
 
 export type KrakenState =
@@ -88,6 +88,61 @@ export const dscNodeFetch = async (
   return {
     masterNode: masterNode,
     computeNodes: nodes,
+  }
+}
+
+export const allNodeFetch = async (
+  cfgUrl: string,
+  dscUrl: string
+): Promise<{
+  cfgMasterNode: Node | null
+  cfgComputeNodes: Map<string, Node> | null
+  dscMasterNode: Node | null
+  dscComputeNodes: Map<string, Node> | null
+}> => {
+  const allNodes = await fetchAllNodesFromUrls(cfgUrl, dscUrl)
+  if (allNodes !== null) {
+    const inputCfgNodes = allNodes[0]
+    const inputDscNodes = allNodes[1]
+    let cfgMasterNode: Node = {}
+    let dscMasterNode: Node = {}
+
+    let cfgNodes: Map<string, Node> = new Map()
+    let dscNodes: Map<string, Node> = new Map()
+
+    // CFG nodes first
+    // Remove master node from list of nodes
+    for (let i = 0; i < inputCfgNodes.length; i++) {
+      if (inputCfgNodes[i].parentId === null || inputCfgNodes[i].parentId === undefined) {
+        cfgMasterNode = inputCfgNodes[i]
+      } else {
+        const id = inputCfgNodes[i].id
+        if (id !== undefined) {
+          cfgNodes.set(id, inputCfgNodes[i])
+        }
+      }
+    }
+
+    // Now DSC nodes
+    for (let i = 0; i < inputDscNodes.length; i++) {
+      if (inputDscNodes[i].id === cfgMasterNode.id) {
+        dscMasterNode = inputDscNodes[i]
+      } else {
+        const id = inputDscNodes[i].id
+        if (id !== undefined) {
+          dscNodes.set(id, inputDscNodes[i])
+        }
+      }
+    }
+
+    return {
+      cfgMasterNode: cfgMasterNode,
+      cfgComputeNodes: cfgNodes,
+      dscMasterNode: dscMasterNode,
+      dscComputeNodes: dscNodes,
+    }
+  } else {
+    return { cfgMasterNode: null, cfgComputeNodes: null, dscMasterNode: null, dscComputeNodes: null }
   }
 }
 
