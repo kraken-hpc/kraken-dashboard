@@ -9,11 +9,20 @@ import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle } from
 import { HashRouter, Route } from 'react-router-dom'
 import { Header } from './components/header/Header'
 import { Dashboard } from './components/dashboard/Dashboard'
-import { Node, dscNodeFetch, uuidToBase64, nodeSort, cfgNodeFetch, base64ToUuid } from './kraken-interactions/node'
+import {
+  Node,
+  dscNodeFetch,
+  uuidToBase64,
+  nodeSort,
+  cfgNodeFetch,
+  base64ToUuid,
+  allNodeFetch,
+} from './kraken-interactions/node'
 import { LiveConnectionType } from './kraken-interactions/live'
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
 import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
+import { cloneDeep } from 'lodash'
 
 interface AppProps {}
 
@@ -260,8 +269,8 @@ class App extends Component<AppProps, AppState> {
   }
 
   handleWebSocketMessage = (jsonData: any) => {
-    const newNodes = new Map(this.state.nodes)
-    const newDscNodes = new Map(this.state.dscNodes)
+    const newNodes = cloneDeep(this.state.nodes)
+    const newDscNodes = cloneDeep(this.state.dscNodes)
     let dscUpdateHappened = false
     for (let i = 0; i < jsonData.length; i++) {
       if (jsonData[i].type === 1) {
@@ -348,7 +357,7 @@ class App extends Component<AppProps, AppState> {
     dscNodes: Map<string, Node>,
     callback?: () => void
   ) => {
-    let finalNodes = new Map(cfgNodes)
+    let finalNodes = cloneDeep(cfgNodes)
 
     // Set the dsc physstate and runstate to the final nodes value
     finalNodes.forEach((value, key, map) => {
@@ -449,39 +458,30 @@ class App extends Component<AppProps, AppState> {
   refetch = () => {
     console.log('Refetching')
     // Get cfg and dsc nodes
-    cfgNodeFetch(cfgUrl).then(cfgNodes => {
-      if (cfgNodes.masterNode !== null && cfgNodes.computeNodes !== null && cfgNodes.masterNode.id !== undefined) {
-        dscNodeFetch(dscUrl, cfgNodes.masterNode.id).then(dscNodes => {
-          if (
-            dscNodes.masterNode !== null &&
-            dscNodes.computeNodes !== null &&
-            cfgNodes.masterNode !== null &&
-            cfgNodes.computeNodes !== null
-          ) {
-            this.setFinalNodes(
-              cfgNodes.masterNode,
-              cfgNodes.computeNodes,
-              dscNodes.masterNode,
-              dscNodes.computeNodes,
-              () => {
-                if (this.state.useWebSocket) {
-                  this.setState({
-                    liveConnectionActive: 'WEBSOCKET',
-                  })
-                } else {
-                  this.setState({
-                    liveConnectionActive: 'POLLING',
-                  })
-                }
-              }
-            )
-          } else {
-            this.setState({
-              liveConnectionActive: 'RECONNECT',
-            })
-            return
+    allNodeFetch(cfgUrl, dscUrl).then(allNodes => {
+      if (
+        allNodes.cfgMasterNode !== null &&
+        allNodes.cfgComputeNodes !== null &&
+        allNodes.dscMasterNode !== null &&
+        allNodes.dscComputeNodes !== null
+      ) {
+        this.setFinalNodes(
+          allNodes.cfgMasterNode,
+          allNodes.cfgComputeNodes,
+          allNodes.dscMasterNode,
+          allNodes.dscComputeNodes,
+          () => {
+            if (this.state.useWebSocket) {
+              this.setState({
+                liveConnectionActive: 'WEBSOCKET',
+              })
+            } else {
+              this.setState({
+                liveConnectionActive: 'POLLING',
+              })
+            }
           }
-        })
+        )
       } else {
         this.setState({
           liveConnectionActive: 'RECONNECT',
