@@ -47,7 +47,6 @@
   width: 200px;
   height: 200px;
   z-index: 1;
-  background-color: white;
   border-radius: 35px;
   border-width: 10px;
   border-style: solid;
@@ -71,7 +70,6 @@
 .color-square-mask .color-square-top{
   content: '';
   position: absolute;
-  background-color: green;
   left: 0;
   top: -143px;
   width: 100%;
@@ -85,7 +83,6 @@
 .color-square-mask .color-square-right{
   content: '';
   position: absolute;
-  background-color: yellow;
   top: 0;
   right: -143px;
   width: 100%;
@@ -99,7 +96,6 @@
 .color-square-mask .color-square-bottom{
   content: '';
   position: absolute;
-  background-color: blue;
   left: 0;
   bottom: -143px;
   width: 100%;
@@ -113,7 +109,6 @@
 .color-square-mask .color-square-left{
   content: '';
   position: absolute;
-  background-color: pink;
   top: 0;
   left: -143px;
   width: 100%;
@@ -173,18 +168,6 @@
   border-radius: 7px;
 }
 
-.dropdown-button{
-  display: inline-block;
-  width: 70px;
-  height: 20px;
-  background-color: grey;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.dropdown-options{
-  position: absolute;
-}
 
 .color-details-row-key{
   display: inline-block;

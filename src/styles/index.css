@@ -15,7 +15,8 @@
   --black: #000000;
   --title-red: #FF6656;
   --title-yellow: #ffeead;
-  --border-gray: #7a7a7a;
+  --border-grey: #7a7a7a;
+  --light-grey: #cacaca;
 }
 
 #root {

@@ -1,3 +1,9 @@
 @import './cluster.css';
 @import './legend.css';
 @import './node.css';
+
+.dashboard {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}

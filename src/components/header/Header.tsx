@@ -61,6 +61,12 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
     })
   }
 
+  closeMenu = () => {
+    this.setState({
+      menuOpen: false,
+    })
+  }
+
   render() {
     return (
       <React.Fragment>
@@ -82,6 +88,7 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
           handleRefreshChange={this.props.handleRefreshChange}
           useWebSocket={this.props.useWebSocket}
           handleWebsocketChange={this.props.handleWebsocketChange}
+          closeMenu={this.closeMenu}
         />
       </React.Fragment>
     )
@@ -94,6 +101,7 @@ interface SettingsModalProps {
   handleRefreshChange: (refreshRate: number) => void
   useWebSocket: boolean
   handleWebsocketChange: (websocket: boolean) => void
+  closeMenu: () => void
 }
 
 interface SettingsModalState {
@@ -162,6 +170,11 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
               this.props.handleWebsocketChange(!this.props.useWebSocket)
             }}
           />
+        </div>
+        <div className={`settings-row`}>
+          <Link to={`/settings`}>
+            <button onClick={this.props.closeMenu}>Color Settings</button>
+          </Link>
         </div>
       </form>
     )

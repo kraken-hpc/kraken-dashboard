@@ -1,8 +1,13 @@
 .node-area{
   display: inline-block;
-  margin: 10px 130px 0 215px;
+  /* margin: 10px 130px 0 215px; */
+  margin: 10px 0 0 0;
   justify-content: center;
   text-align: center;
+}
+
+.buffer-area{
+  width: 215px;
 }
 
 .cluster{
@@ -10,7 +15,7 @@
   justify-content: center;
   padding: 10px;
   margin: 10px 0;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 10px;
 }
 

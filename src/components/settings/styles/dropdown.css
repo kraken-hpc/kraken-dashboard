@@ -1,0 +1,138 @@
+.dropdown-button {
+  width: 110px;
+  height: 20px;
+  background-color: var(--light-grey);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  padding: 10px 10px;
+  border-radius: 4px;
+  text-align: left;
+}
+
+
+.dropdown-button:hover {
+  /* transform: scale(1.15) rotate(90deg); */
+  /* background-color: #c79656; */
+  filter: brightness(90%)
+}
+.dropdown-button.active {
+  /* transform: scale(1.3) rotate(90deg); */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* .dropdown-button{
+  display: inline-block;
+  width: 70px;
+  height: 20px;
+  background-color: grey;
+  cursor: pointer;
+  padding: 10px;
+}
+*/
+.dropdown-options {
+  position: absolute;
+  overflow: hidden;
+  width: 130px;
+  z-index: 3;
+}
+
+.dropdown-options.active {
+  opacity: 100;
+  /* height: 100px; */
+}
+
+.dropdown-option {
+  padding: 3px 10px;
+  text-align: left;
+  height: 0;
+  opacity: 0;
+  transition: 0.2s ease;
+  background-color: var(--light-grey);
+  filter: brightness(115%);
+  cursor: pointer;
+}
+
+.dropdown-option.active {
+  opacity: 100;
+  height: 20px;
+}
+
+.dropdown-option:hover{
+  filter: brightness(95%)
+}
+
+.dropdown-button .arrow {
+  -webkit-transform: rotate(0);
+  transform: rotate(0);
+  left: 0;
+}
+.dropdown-button .arrow:before,
+.dropdown-button .arrow:after {
+  background-color: transparent;
+  width: 3px;
+  height: 10px;
+  display: inline-block;
+  position: absolute;
+  border-bottom: 12px solid white;
+  top: 0;
+  left: 0;
+  -webkit-transform: rotate(0);
+  transform: rotate(0);
+}
+.dropdown-button .arrow:before {
+  -webkit-transform: rotate(-135deg);
+  transform: rotate(-135deg);
+}
+.dropdown-button .arrow:after {
+  -webkit-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+.dropdown-button.active .arrow {
+  -webkit-transform: rotate(0);
+  transform: rotate(0);
+  -webkit-transform: translate(0, -6px);
+  transform: translate(0, -6px);
+}
+.dropdown-button.active .arrow:before {
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+.dropdown-button.active .arrow:after {
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+.arrow {
+  margin-left: 5px;
+  width: 13px;
+  height: 13px;
+  display: block;
+  position: relative;
+  /* bottom: -5px; */
+  left: -10px;
+  transition: 0.2s ease;
+  margin-top: 2px;
+  text-align: left;
+  -webkit-transform: rotate(45deg);
+  transform: rotate(45deg);
+  float: right;
+  z-index: 2;
+}
+.arrow:before,
+.arrow:after {
+  position: absolute;
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 3px;
+  background-color: #fff;
+  transition: 0.2s ease;
+}
+.arrow:after {
+  position: absolute;
+  -webkit-transform: rotate(90deg);
+  transform: rotate(90deg);
+  top: -5px;
+  left: 5px;
+}

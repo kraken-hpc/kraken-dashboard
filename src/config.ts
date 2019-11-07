@@ -27,12 +27,15 @@ export const COLORS = {
   green: window.getComputedStyle(document.documentElement).getPropertyValue('--green'),
   black: window.getComputedStyle(document.documentElement).getPropertyValue('--black'),
   titleRed: window.getComputedStyle(document.documentElement).getPropertyValue('--title-red'),
+  borderGrey: window.getComputedStyle(document.documentElement).getPropertyValue('--border-grey'),
+  lightGrey: window.getComputedStyle(document.documentElement).getPropertyValue('--light-grey'),
 }
 
 // First value in values to color will be shown in config page
 export const defaultNodeColorInfo: NodeColorInfo = {
   TOP: {
     category: 'physState',
+    DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'POWER_ON', color: COLORS.green },
       { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
@@ -44,6 +47,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
   },
   RIGHT: {
     category: 'runState',
+    DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'INIT', color: COLORS.blue },
       { value: 'UNKNOWN', color: COLORS.yellow },
@@ -53,6 +57,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
   },
   LEFT: {
     category: 'physState',
+    DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'POWER_ON', color: COLORS.green },
       { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
@@ -64,6 +69,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
   },
   BOTTOM: {
     category: 'runState',
+    DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'INIT', color: COLORS.blue },
       { value: 'UNKNOWN', color: COLORS.yellow },
@@ -72,7 +78,8 @@ export const defaultNodeColorInfo: NodeColorInfo = {
     ],
   },
   BORDER: {
-    category: 'VBox/pxe',
+    category: 'PXE/state',
+    DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'NONE', color: COLORS.grey },
       { value: 'WAIT', color: COLORS.yellow },

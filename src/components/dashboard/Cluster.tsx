@@ -2,12 +2,14 @@ import React, { Component } from 'react'
 import { Node as NodeInterface } from '../../kraken-interactions/node'
 import { MasterNode } from './MasterNode'
 import { Node } from './Node'
+import { NodeColorInfo } from '../settings/NodeColor'
 
 interface ClusterProps {
   disconnected: boolean
   masterNode: NodeInterface
   nodes: Map<string, NodeInterface>
   opened: () => void
+  colorInfo: NodeColorInfo
 }
 
 export class Cluster extends Component<ClusterProps> {
@@ -65,7 +67,7 @@ export class Cluster extends Component<ClusterProps> {
             <MasterNode data={this.props.masterNode} />
             <div className='cluster-nodelist'>
               {Array.from(this.props.nodes.values()).map(node => {
-                return <Node data={node} key={node.id} />
+                return <Node data={node} key={node.id} colorInfo={this.props.colorInfo} />
               })}
             </div>
           </div>

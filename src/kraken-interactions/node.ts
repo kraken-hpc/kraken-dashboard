@@ -1,6 +1,7 @@
 import { fetchNodeListFromUrl, fetchAllNodesFromUrls } from './fetch'
 import { COLORS, cfgUrlSingle, dscUrlSingle } from '../config'
 import { cloneDeep } from 'lodash'
+import { NodeArea, NodeColorInfo, NodeColorInfoArea } from '../components/settings/NodeColor'
 
 export type KrakenState =
   | 'PHYS_ERROR'
@@ -13,6 +14,8 @@ export type KrakenState =
   | 'INIT'
   | 'SYNC'
   | 'POWER_ON'
+
+export type DSCorCFG = 'DSC' | 'CFG'
 
 export interface Node {
   id?: string
@@ -208,6 +211,68 @@ export const stateToColor = (state: KrakenState | undefined): string => {
   }
 }
 
+export const getColorsForArea = (data: Node, colorInfo: NodeColorInfo | undefined): Map<NodeArea, string> => {
+  const colorMap: Map<NodeArea, string> = new Map()
+
+  colorMap.set('TOP', stateToColor(data.physState))
+  colorMap.set('RIGHT', stateToColor(data.runState))
+  colorMap.set('BOTTOM', stateToColor(data.runState))
+  colorMap.set('LEFT', stateToColor(data.physState))
+
+  if (colorInfo !== undefined) {
+    Object.entries(colorInfo).forEach(([nodeAreaName, info]) => {
+      const newAreaName = nodeAreaName as NodeArea
+      const newInfo = info as NodeColorInfoArea
+      if (newInfo.category === 'physState') {
+        newInfo.valuesToColor.forEach(valueToColor => {
+          if (valueToColor.value === data.physState) {
+            colorMap.set(newAreaName, valueToColor.color)
+          }
+        })
+      } else if (newInfo.category === 'runState') {
+        newInfo.valuesToColor.forEach(valueToColor => {
+          if (valueToColor.value === data.runState) {
+            colorMap.set(newAreaName, valueToColor.color)
+          }
+        })
+      } else {
+        if (data.extensions !== undefined) {
+          data.extensions.forEach(extension => {
+            const urlLevels = getStateUrlLevels(newInfo.category)
+            if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
+              const value = getNestedValue(extension, 0, urlLevels)
+              if (value !== undefined) {
+                newInfo.valuesToColor.forEach(valueToColor => {
+                  if (valueToColor.value === value) {
+                    colorMap.set(newAreaName, valueToColor.color)
+                  }
+                })
+              } else {
+                colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
+                // console.log('got an undefined value')
+              }
+            }
+          })
+        }
+      }
+    })
+  }
+
+  return colorMap
+}
+
+const getNestedValue = (dictionary: any, level: number, arrayOfKeys: string[]): string | undefined => {
+  if (level === arrayOfKeys.length) {
+    return undefined
+  }
+  const returnValue = dictionary[arrayOfKeys[level]]
+  if (returnValue === undefined) {
+    return getNestedValue(dictionary, level + 1, arrayOfKeys)
+  } else {
+    return returnValue
+  }
+}
+
 // Takes in a base64 number and converts it to hex
 const base64toHEX = (base64: string): string => {
   const raw = atob(base64)
@@ -288,6 +353,10 @@ export const base64Convert = (key: string, value: string) => {
 // Strips the leading string of the protobuf urls
 export const stripProtoUrl = (url: string) => {
   return url.replace('type.googleapis.com/proto.', '')
+}
+
+export const getStateUrlLevels = (url: string): string[] => {
+  return url.split('/')
 }
 
 // Sends a PUT command to set data for a node (Used for power off and power on)

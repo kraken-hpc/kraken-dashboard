@@ -1,21 +1,30 @@
 import React, { Component } from 'react'
-import { NodeStateOptions, Category } from '../../kraken-interactions/nodeStateOptions'
+import { NodeStateOptions, NodeStateCategory } from '../../kraken-interactions/nodeStateOptions'
 import { COLORS } from '../../config'
-import { SketchPicker } from 'react-color'
+import { SketchPicker, ColorResult } from 'react-color'
+import { DSCorCFG } from '../../kraken-interactions/node'
+import { cloneDeep } from 'lodash'
 
 export type NodeArea = 'TOP' | 'RIGHT' | 'BOTTOM' | 'LEFT' | 'BORDER'
 
 export interface NodeColorInfo {
-  TOP: { category: string; valuesToColor: { value: string; color: string }[] }
-  RIGHT: { category: string; valuesToColor: { value: string; color: string }[] }
-  LEFT: { category: string; valuesToColor: { value: string; color: string }[] }
-  BOTTOM: { category: string; valuesToColor: { value: string; color: string }[] }
-  BORDER: { category: string; valuesToColor: { value: string; color: string }[] }
+  TOP: NodeColorInfoArea
+  RIGHT: NodeColorInfoArea
+  LEFT: NodeColorInfoArea
+  BOTTOM: NodeColorInfoArea
+  BORDER: NodeColorInfoArea
+}
+
+export interface NodeColorInfoArea {
+  category: string
+  DSCorCFG: DSCorCFG
+  valuesToColor: { value: string; color: string }[]
 }
 
 interface NodeColorProps {
   nodeStateOptions: NodeStateOptions | undefined
   currentColorConfig: NodeColorInfo
+  changeColorInfo: (newColorInfo: NodeColorInfo) => void
 }
 
 interface NodeColorState {
@@ -49,6 +58,7 @@ export class NodeColor extends Component<NodeColorProps, NodeColorState> {
           selectedArea={this.state.selected}
           stateOptions={this.props.nodeStateOptions}
           currentColorConfig={this.props.currentColorConfig}
+          changeColorInfo={this.props.changeColorInfo}
         />
       </div>
     )
@@ -81,7 +91,6 @@ const NodeAreaSelector = (props: NodeAreaSelectorProps) => {
             style={{ backgroundColor: props.colorInfo.TOP.valuesToColor[0].color }}
             className={`color-square-top`}
             onClick={() => {
-              console.log('clicked top!')
               props.changeSelectedArea('TOP')
             }}
           />
@@ -132,11 +141,12 @@ interface NodeColorDetailsProps {
   selectedArea: NodeArea
   stateOptions: NodeStateOptions | undefined
   currentColorConfig: NodeColorInfo
+  changeColorInfo: (newColorInfo: NodeColorInfo) => void
 }
 
 interface NodeColorDetailsState {
   selectedValueName: string
-  selectedCategory: string
+  selectedAreaInfo: NodeColorInfoArea
   availableCategoryNames: string[]
   availableValues: string[]
   currentColorsForAvailableValues: Map<string, string>
@@ -150,7 +160,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 
     this.state = {
       selectedValueName: stateInfo.availableValues[0],
-      selectedCategory: stateInfo.selectedCategory,
+      selectedAreaInfo: stateInfo.selectedAreaInfo,
       availableCategoryNames: stateInfo.availableCategoryNames,
       availableValues: stateInfo.availableValues,
       currentColorsForAvailableValues: stateInfo.currentColorsForAvailableValues,
@@ -158,17 +168,17 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
   }
 
   getState = (): {
-    selectedCategory: string
+    selectedAreaInfo: NodeColorInfoArea
     availableCategoryNames: string[]
     availableValues: string[]
     currentColorsForAvailableValues: Map<string, string>
   } => {
-    let availableCategories: Category[] = []
+    let availableCategories: NodeStateCategory[] = []
     let availableValues: string[] = []
     let availableCategoryNames: string[] = []
     const currentColorsForAvailableValues: Map<string, string> = new Map()
 
-    const selectedCategory = this.props.currentColorConfig[this.props.selectedArea].category
+    const selectedAreaInfo: NodeColorInfoArea = this.props.currentColorConfig[this.props.selectedArea]
 
     if (this.props.stateOptions !== undefined) {
       availableCategories = this.props.stateOptions.state_categories
@@ -176,7 +186,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 
     availableCategories.forEach(category => {
       availableCategoryNames.push(category.name)
-      if (category.name === selectedCategory) {
+      if (category.name === selectedAreaInfo.category) {
         availableValues = category.options
       }
     })
@@ -189,7 +199,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
       })
     })
 
-    return { selectedCategory, availableCategoryNames, availableValues, currentColorsForAvailableValues }
+    return { selectedAreaInfo, availableCategoryNames, availableValues, currentColorsForAvailableValues }
   }
 
   componentDidUpdate = (prevProps: NodeColorDetailsProps) => {
@@ -204,7 +214,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
       }
       this.setState({
         selectedValueName: selectedValueName,
-        selectedCategory: stateInfo.selectedCategory,
+        selectedAreaInfo: stateInfo.selectedAreaInfo,
         availableCategoryNames: stateInfo.availableCategoryNames,
         availableValues: stateInfo.availableValues,
         currentColorsForAvailableValues: stateInfo.currentColorsForAvailableValues,
@@ -218,6 +228,49 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     })
   }
 
+  handleCategoryChange = (newCategory: string) => {
+    const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
+    const newValuesToColor: { value: string; color: string }[] = []
+    let newCategoryOptions: string[] = []
+    if (this.props.stateOptions !== undefined) {
+      this.props.stateOptions.state_categories.forEach(element => {
+        if (element.name === newCategory) {
+          newCategoryOptions = element.options
+        }
+      })
+    }
+    newCategoryOptions.forEach(newOption => {
+      newValuesToColor.push({ value: newOption, color: COLORS.grey })
+    })
+    newColorInfo[this.props.selectedArea].category = newCategory
+    newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
+
+    this.props.changeColorInfo(newColorInfo)
+  }
+
+  handleDSCCFGChange = (newValue: DSCorCFG) => {
+    const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
+    newColorInfo[this.props.selectedArea].DSCorCFG = newValue
+
+    this.props.changeColorInfo(newColorInfo)
+  }
+
+  handleColorChange = (newColor: ColorResult) => {
+    const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
+    const newValuesToColor: { value: string; color: string }[] = []
+    newColorInfo[this.props.selectedArea].valuesToColor.forEach(element => {
+      if (element.value === this.state.selectedValueName) {
+        newValuesToColor.push({ value: element.value, color: newColor.hex })
+      } else {
+        newValuesToColor.push(element)
+      }
+    })
+
+    newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
+
+    this.props.changeColorInfo(newColorInfo)
+  }
+
   render() {
     if (this.props.stateOptions === undefined) {
       return <div>state options undefined</div>
@@ -227,9 +280,23 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
       <div className={`color-details-area`}>
         <h1>{this.props.selectedArea}</h1>
         <div className={`color-selection-area`}>
-          <div className={`color-details-row`}>
-            <div style={{ display: 'inline-block', margin: 'auto 10px' }}>Category:</div>
-            <DropDown options={this.state.availableCategoryNames} value={this.state.selectedCategory} />
+          <div>
+            <div className={`color-details-row`}>
+              <div style={{ display: 'inline-block', margin: 'auto 10px' }}>Category:</div>
+              <DropDown
+                options={this.state.availableCategoryNames}
+                value={this.state.selectedAreaInfo.category}
+                onChange={this.handleCategoryChange}
+              />
+            </div>
+            <div className={`color-details-row`}>
+              <div style={{ display: 'inline-block', margin: 'auto 10px' }}>DSC or CFG:</div>
+              <DropDown
+                options={['DSC', 'CFG']}
+                value={this.state.selectedAreaInfo.DSCorCFG}
+                onChange={this.handleDSCCFGChange}
+              />
+            </div>
           </div>
           <div>
             {this.state.availableValues.map(value => {
@@ -238,7 +305,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
                   className={`color-details-row`}
                   style={
                     this.state.selectedValueName === value
-                      ? { borderColor: 'grey', cursor: 'pointer' }
+                      ? { borderColor: COLORS.borderGrey, cursor: 'pointer' }
                       : { cursor: 'pointer' }
                   }
                   onClick={() => {
@@ -259,6 +326,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
             presetColors={Object.values(COLORS)}
             disableAlpha={true}
             color={this.state.currentColorsForAvailableValues.get(this.state.selectedValueName)}
+            onChange={this.handleColorChange}
           />
         </div>
       </div>
@@ -269,6 +337,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 interface DropDownProps {
   options: string[]
   value: string
+  onChange: (newValue: any) => void
 }
 
 interface DropDownState {
@@ -276,10 +345,25 @@ interface DropDownState {
 }
 
 class DropDown extends Component<DropDownProps, DropDownState> {
+  node: HTMLDivElement | null = null
+
   constructor(props: DropDownProps) {
     super(props)
     this.state = {
       open: false,
+    }
+  }
+
+  componentWillMount = () => {
+    document.addEventListener('mousedown', this.handleClick, false)
+  }
+
+  handleClick = (e: any) => {
+    // Close dropdown if click happens anywhere outside of it
+    if (this.node !== null && !this.node.contains(e.target)) {
+      this.setState({
+        open: false,
+      })
     }
   }
 
@@ -291,15 +375,25 @@ class DropDown extends Component<DropDownProps, DropDownState> {
 
   render() {
     return (
-      <div>
-        <div className={`dropdown-button`} onClick={this.toggleDropDown}>
+      <div ref={node => (this.node = node)}>
+        <div className={this.state.open ? `dropdown-button active` : `dropdown-button`} onClick={this.toggleDropDown}>
           {this.props.value}
+          <span className={`arrow`} />
         </div>
-        <div
-          style={this.state.open ? { visibility: 'visible' } : { visibility: 'hidden' }}
-          className={`dropdown-options`}>
+        <div className={`dropdown-options`}>
           {this.props.options.map((option: string) => {
-            return <div>{option}</div>
+            return (
+              <div
+                className={this.state.open ? `dropdown-option active` : `dropdown-option`}
+                onClick={() => {
+                  this.props.onChange(option)
+                  this.setState({
+                    open: false,
+                  })
+                }}>
+                {option}
+              </div>
+            )
           })}
         </div>
       </div>

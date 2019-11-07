@@ -4,6 +4,7 @@ import './components/header/styles/header.css'
 import './components/dashboard/styles/dashboard.css'
 import './components/nodeview/styles/nodeview.css'
 import './components/settings/styles/nodecolor.css'
+import './components/settings/styles/dropdown.css'
 
 import React, { Component } from 'react'
 import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle, defaultNodeColorInfo } from './config'
@@ -18,6 +19,7 @@ import {
   cfgNodeFetch,
   base64ToUuid,
   allNodeFetch,
+  mergeDSCandCFG,
 } from './kraken-interactions/node'
 import { LiveConnectionType } from './kraken-interactions/live'
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
@@ -369,14 +371,20 @@ class App extends Component<AppProps, AppState> {
     dscNodes: Map<string, Node>,
     callback?: () => void
   ) => {
-    let finalNodes = cloneDeep(cfgNodes)
+    let newCfgNodes = cloneDeep(cfgNodes)
+    let finalNodes: Map<string, Node> = new Map()
 
     // Set the dsc physstate and runstate to the final nodes value
-    finalNodes.forEach((value, key, map) => {
+    newCfgNodes.forEach((value, key, map) => {
       const dscNode = dscNodes.get(key)
       if (dscNode !== undefined) {
-        value.physState = dscNode.physState
-        value.runState = dscNode.runState
+        const newValue = mergeDSCandCFG(value, dscNode)
+
+        if (newValue.id !== undefined) {
+          finalNodes.set(newValue.id, newValue)
+        }
+        // value.physState = dscNode.physState
+        // value.runState = dscNode.runState
       }
     })
 
@@ -530,6 +538,12 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
+  changeColorInfo = (newColorInfo: NodeColorInfo) => {
+    this.setState({
+      colorInfo: newColorInfo,
+    })
+  }
+
   render() {
     return (
       <HashRouter>
@@ -552,6 +566,7 @@ class App extends Component<AppProps, AppState> {
                 masterNode={this.state.masterNode}
                 nodes={this.state.nodes}
                 opened={this.stopUpdatingGraph}
+                colorInfo={this.state.colorInfo}
               />
             )}
           />
@@ -576,6 +591,7 @@ class App extends Component<AppProps, AppState> {
                   }
                 }}
                 graph={this.state.graph}
+                colorInfo={this.state.colorInfo}
               />
             )}
           />
@@ -583,7 +599,11 @@ class App extends Component<AppProps, AppState> {
             exact
             path='/settings'
             render={() => (
-              <NodeColor nodeStateOptions={this.state.nodeStateOptions} currentColorConfig={this.state.colorInfo} />
+              <NodeColor
+                nodeStateOptions={this.state.nodeStateOptions}
+                currentColorConfig={this.state.colorInfo}
+                changeColorInfo={this.changeColorInfo}
+              />
             )}
           />
         </React.Fragment>

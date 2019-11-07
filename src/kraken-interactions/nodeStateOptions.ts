@@ -1,10 +1,10 @@
 import stateData from '../states.json'
 
 export interface NodeStateOptions {
-  state_categories: Category[]
+  state_categories: NodeStateCategory[]
 }
 
-export interface Category {
+export interface NodeStateCategory {
   name: string
   options: string[]
   url: string

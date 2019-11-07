@@ -1,11 +1,13 @@
 .legend {
   /* top: 125px; */
-  position: fixed;
+  /* position: fixed; */
+  position: relative;
   padding: 7px;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 10px;
   margin: 20px 15px;
   text-align: left;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .legend-title {
@@ -13,31 +15,61 @@
   top: -16px;
   left: 5px;
   padding: 5px 5px 3px 5px;
-  font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   background-color: white;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 8px;
 }
 
 #first-row {
   margin: 12px 0 10px 0;
   text-align: center;
+  /* height: 75px; */
   /* border: grey solid 2px; */
   /* border-radius: 5px; */
-  border-bottom: var(--border-gray) solid 2px;
-  padding: 5px 0 2px 0;
+  border-bottom: var(--border-grey) solid 2px;
+  /* padding: 5px 0 2px 0; */
 }
 
-#phys-text {
+#top-text {
   position: relative;
-  margin: 0 10px 0 0;
-  top: -17px;
+  display: block;
+  top: 0;
+  margin-bottom: 2px;
 }
 
-#run-text {
+#bottom-text {
   position: relative;
-  top: -4px;
+  display: block;
+  bottom: 0;
+  margin-top: 5px;
+}
+
+#border-text {
+  position: relative;
+  display: block;
+  bottom: 0;
+  margin: 5px 0;
+}
+
+#border-text:before{
+  content: 'Border: ';
+  font-weight: bold;
+}
+
+#middle-row {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+#right-text {
+  margin: auto 0 auto 10px;
+  width: 50%;
+}
+
+#left-text {
+  margin: auto 10px auto 0;
+  width: 50%;
 }
 
 .row {
@@ -49,7 +81,6 @@
   position: relative;
   margin: 0 0 0 10px;
   top: -10px;
-  font-family: Arial, Helvetica, sans-serif;
   display: inline-block;
 }
 
@@ -69,4 +100,25 @@
   display: block;
   border-bottom: medium solid black;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.legend-color-value-row{
+  margin: 2px 0;
+}
+
+.legend-color{
+  width: 35px;
+  height: 13px;
+  border-radius: 5px;
+  margin: 0 7px 0 5px;
+  display: inline-block;
+}
+
+.legend-value{
+  display: inline-block;
+}
+
+.legend-category-title{
+  margin: 7px 0 5px 0;
+  font-weight: bold;
 }
