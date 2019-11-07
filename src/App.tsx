@@ -3,9 +3,10 @@ import './styles/square.css'
 import './components/header/styles/header.css'
 import './components/dashboard/styles/dashboard.css'
 import './components/nodeview/styles/nodeview.css'
+import './components/settings/styles/nodecolor.css'
 
 import React, { Component } from 'react'
-import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle } from './config'
+import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle, defaultNodeColorInfo } from './config'
 import { HashRouter, Route } from 'react-router-dom'
 import { Header } from './components/header/Header'
 import { Dashboard } from './components/dashboard/Dashboard'
@@ -23,6 +24,8 @@ import { fetchJsonFromUrl } from './kraken-interactions/fetch'
 import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
 import { cloneDeep } from 'lodash'
+import { NodeColor, NodeColorInfo } from './components/settings/NodeColor'
+import { NodeStateOptions, getStateData } from './kraken-interactions/nodeStateOptions'
 
 interface AppProps {}
 
@@ -38,6 +41,8 @@ interface AppState {
   dscNodes: Map<string, Node>
   updatingGraph: string | undefined
   graph: Graph | undefined
+  colorInfo: NodeColorInfo
+  nodeStateOptions?: NodeStateOptions
 }
 
 class App extends Component<AppProps, AppState> {
@@ -59,6 +64,7 @@ class App extends Component<AppProps, AppState> {
       liveConnectionActive: 'REFETCH',
       updatingGraph: undefined,
       graph: undefined,
+      colorInfo: defaultNodeColorInfo,
     }
   }
 
@@ -114,9 +120,15 @@ class App extends Component<AppProps, AppState> {
       // Start new live connection
       switch (this.state.liveConnectionActive) {
         case 'POLLING':
+          this.setState({
+            nodeStateOptions: getStateData(),
+          })
           this.startPolling()
           break
         case 'WEBSOCKET':
+          this.setState({
+            nodeStateOptions: getStateData(),
+          })
           this.startWebSocket(this.refetch)
           break
         case 'RECONNECT':
@@ -565,6 +577,13 @@ class App extends Component<AppProps, AppState> {
                 }}
                 graph={this.state.graph}
               />
+            )}
+          />
+          <Route
+            exact
+            path='/settings'
+            render={() => (
+              <NodeColor nodeStateOptions={this.state.nodeStateOptions} currentColorConfig={this.state.colorInfo} />
             )}
           />
         </React.Fragment>

@@ -1,4 +1,7 @@
+import { NodeColorInfo } from './components/settings/NodeColor'
+
 export const KRAKEN_IP = '192.168.57.10:3141'
+// export const KRAKEN_IP = '10.15.247.252:3141'
 // Polling and Reconnecting refresh rate (time in seconds between pulls)
 export const REFRESH = 0.4
 // Should websocket be turned on by default?
@@ -24,4 +27,57 @@ export const COLORS = {
   green: window.getComputedStyle(document.documentElement).getPropertyValue('--green'),
   black: window.getComputedStyle(document.documentElement).getPropertyValue('--black'),
   titleRed: window.getComputedStyle(document.documentElement).getPropertyValue('--title-red'),
+}
+
+// First value in values to color will be shown in config page
+export const defaultNodeColorInfo: NodeColorInfo = {
+  TOP: {
+    category: 'physState',
+    valuesToColor: [
+      { value: 'POWER_ON', color: COLORS.green },
+      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
+      { value: 'POWER_OFF', color: COLORS.grey },
+      { value: 'POWER_CYCLE', color: COLORS.purple },
+      { value: 'PHYS_HANG', color: COLORS.purple },
+      { value: 'PHYS_ERROR', color: COLORS.red },
+    ],
+  },
+  RIGHT: {
+    category: 'runState',
+    valuesToColor: [
+      { value: 'INIT', color: COLORS.blue },
+      { value: 'UNKNOWN', color: COLORS.yellow },
+      { value: 'SYNC', color: COLORS.green },
+      { value: 'ERROR', color: COLORS.red },
+    ],
+  },
+  LEFT: {
+    category: 'physState',
+    valuesToColor: [
+      { value: 'POWER_ON', color: COLORS.green },
+      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
+      { value: 'POWER_OFF', color: COLORS.grey },
+      { value: 'POWER_CYCLE', color: COLORS.purple },
+      { value: 'PHYS_HANG', color: COLORS.purple },
+      { value: 'PHYS_ERROR', color: COLORS.red },
+    ],
+  },
+  BOTTOM: {
+    category: 'runState',
+    valuesToColor: [
+      { value: 'INIT', color: COLORS.blue },
+      { value: 'UNKNOWN', color: COLORS.yellow },
+      { value: 'SYNC', color: COLORS.green },
+      { value: 'ERROR', color: COLORS.red },
+    ],
+  },
+  BORDER: {
+    category: 'VBox/pxe',
+    valuesToColor: [
+      { value: 'NONE', color: COLORS.grey },
+      { value: 'WAIT', color: COLORS.yellow },
+      { value: 'INIT', color: COLORS.blue },
+      { value: 'COMP', color: COLORS.green },
+    ],
+  },
 }
