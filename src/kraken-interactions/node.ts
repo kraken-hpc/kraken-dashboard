@@ -1,5 +1,6 @@
 import { fetchNodeListFromUrl, fetchAllNodesFromUrls } from './fetch'
 import { COLORS, cfgUrlSingle, dscUrlSingle } from '../config'
+import { cloneDeep } from 'lodash'
 
 export type KrakenState =
   | 'PHYS_ERROR'
@@ -340,4 +341,56 @@ export const powerOffNode = (cfgNode: Node, dscNode: Node) => {
   putNode(dscUrlSingle, dscNode, () => {
     putNode(cfgUrlSingle, cfgNode)
   })
+}
+
+export const mergeDSCandCFG = (cfgNode: Node, dscNode: Node): Node => {
+  const finalNode: Node = cloneDeep(cfgNode)
+
+  const extensionsMap: Map<string, any> = new Map()
+  const servicesMap: Map<string, any> = new Map()
+
+  if (dscNode !== undefined) {
+    if (finalNode.extensions !== undefined) {
+      for (let i = 0; i < finalNode.extensions.length; i++) {
+        extensionsMap.set(finalNode.extensions[i]['@type'], finalNode.extensions[i])
+      }
+
+      if (dscNode.extensions !== undefined) {
+        for (let i = 0; i < dscNode.extensions.length; i++) {
+          const obj = extensionsMap.get(dscNode.extensions[i]['@type'])
+          if (obj !== undefined) {
+            const merged = { ...obj, ...dscNode.extensions[i] }
+            extensionsMap.set(obj['@type'], merged)
+          } else {
+            extensionsMap.set(dscNode.extensions[i]['@type'], dscNode.extensions[i])
+          }
+        }
+      }
+    }
+
+    if (finalNode.services !== undefined) {
+      for (let i = 0; i < finalNode.services.length; i++) {
+        servicesMap.set(finalNode.services[i]['id'], finalNode.services[i])
+      }
+
+      if (dscNode.services !== undefined) {
+        for (let i = 0; i < dscNode.services.length; i++) {
+          const obj = servicesMap.get(dscNode.services[i]['id'])
+          if (obj !== undefined) {
+            const merged = { ...obj, ...dscNode.services[i] }
+            servicesMap.set(obj['id'], merged)
+          } else {
+            servicesMap.set(dscNode.services[i]['id'], dscNode.services[i])
+          }
+        }
+      }
+    }
+  }
+
+  finalNode.physState = dscNode.physState
+  finalNode.runState = dscNode.runState
+  finalNode.extensions = Array.from(extensionsMap.values())
+  finalNode.services = Array.from(servicesMap.values())
+
+  return finalNode
 }
