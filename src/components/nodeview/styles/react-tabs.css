@@ -1,7 +1,6 @@
 .react-tabs {
   -webkit-tap-highlight-color: transparent;
   font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
 }
 
 .react-tabs__tab-list {
@@ -20,13 +19,13 @@
   padding: 6px 12px;
   cursor: pointer;
   color: black;
+  font-weight: bold;
 }
 
 .react-tabs__tab--selected {
   background: #fff;
   border-color: black;
   border-width: medium;
-  color: black;
   border-radius: 6px 6px 0 0;
   font-weight: bold;
 }
