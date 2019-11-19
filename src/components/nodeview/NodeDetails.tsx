@@ -1,5 +1,7 @@
 import React from 'react'
-import { Node, base64ToUuid, stripProtoUrl, base64Convert } from '../../kraken-interactions/node'
+import { Node, base64ToUuid, stripProtoUrl, base64Convert, mergeDSCandCFG } from '../../kraken-interactions/node'
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import './styles/react-tabs.css'
 
 interface NodeDetailsProps {
   cfgNode: Node
@@ -33,11 +35,17 @@ export const NodeDetails = (props: NodeDetailsProps) => {
   const archRow = arch !== '' ? NodeDetailsRow('Architecture', 0, arch) : <React.Fragment />
   const platformRow = platform !== '' ? NodeDetailsRow('Platform', 0, platform) : <React.Fragment />
 
+  const mergedNode = mergeDSCandCFG(props.cfgNode, props.dscNode)
   // Combine cfg and dsc node extensions (dsc takes priority)
-  const jsxExtensions = getExtSrvs(props.cfgNode.extensions, props.dscNode.extensions, '@type')
-
+  const mergedJsxExtensions = getExtSrvs(mergedNode.extensions, '@type')
   // Combine cfg and dsc node services (dsc takes priority)
-  const jsxServices = getExtSrvs(props.cfgNode.services, props.dscNode.services, 'id')
+  const mergedJsxServices = getExtSrvs(mergedNode.services, 'id')
+
+  const cfgJsxExtensions = getExtSrvs(props.cfgNode.extensions, '@type')
+  const cfgJsxServices = getExtSrvs(props.cfgNode.services, 'id')
+
+  const dscJsxExtensions = getExtSrvs(props.dscNode.extensions, '@type')
+  const dscJsxServices = getExtSrvs(props.dscNode.services, 'id')
 
   return (
     <div className={`node-detail`}>
@@ -50,55 +58,57 @@ export const NodeDetails = (props: NodeDetailsProps) => {
         {archRow}
         {platformRow}
       </div>
-      {jsxExtensions.length > 0 ? <h2>Extensions:</h2> : <React.Fragment />}
-      {jsxExtensions}
-      {jsxServices.length > 0 ? <h2>Services:</h2> : <React.Fragment />}
-      {jsxServices}
+      <Tabs>
+        <TabList>
+          <Tab>Mixed</Tab>
+          <Tab>CFG</Tab>
+          <Tab>DSC</Tab>
+        </TabList>
+        <TabPanel>
+          {mergedJsxExtensions.length > 0 ? <h2>Extensions:</h2> : <React.Fragment />}
+          {mergedJsxExtensions}
+          {mergedJsxServices.length > 0 ? <h2>Services:</h2> : <React.Fragment />}
+          {mergedJsxServices}
+        </TabPanel>
+        <TabPanel>
+          {cfgJsxExtensions.length > 0 ? <h2>Extensions:</h2> : <React.Fragment />}
+          {cfgJsxExtensions}
+          {cfgJsxServices.length > 0 ? <h2>Services:</h2> : <React.Fragment />}
+          {cfgJsxServices}
+        </TabPanel>
+        <TabPanel>
+          {dscJsxExtensions.length > 0 ? <h2>Extensions:</h2> : <React.Fragment />}
+          {dscJsxExtensions}
+          {dscJsxServices.length > 0 ? <h2>Services:</h2> : <React.Fragment />}
+          {dscJsxServices}
+        </TabPanel>
+      </Tabs>
     </div>
   )
 }
 
-const getExtSrvs = (cfg: any[] | undefined, dsc: any[] | undefined, id: string): JSX.Element[] => {
-  const map: Map<string, any> = new Map()
-
-  if (cfg !== undefined) {
-    for (let i = 0; i < cfg.length; i++) {
-      map.set(cfg[i][id], cfg[i])
-    }
-  }
-
-  if (dsc !== undefined) {
-    for (let i = 0; i < dsc.length; i++) {
-      const obj = map.get(dsc[i][id])
-      if (obj !== undefined) {
-        const merged = { ...obj, ...dsc[i] }
-        map.set(obj[id], merged)
-      } else {
-        map.set(dsc[i][id], dsc[i])
-      }
-    }
-  }
-
-  const array = Array.from(map.values())
+const getExtSrvs = (extSrvs: any[] | undefined, id: string): JSX.Element[] => {
   const jsx: JSX.Element[] = []
 
-  // Sorting the extensions by name
-  array.sort((a, b) => {
-    if (stripProtoUrl(a[id]) < stripProtoUrl(b[id])) {
-      return -1
+  if (extSrvs !== undefined) {
+    // Sorting the extensions by name
+    extSrvs.sort((a, b) => {
+      if (stripProtoUrl(a[id]) < stripProtoUrl(b[id])) {
+        return -1
+      }
+      if (stripProtoUrl(a[id]) > stripProtoUrl(b[id])) {
+        return 1
+      }
+      return 0
+    })
+    // Getting jsx versions of the extensions
+    for (let i = 0; i < extSrvs.length; i++) {
+      jsx.push(<GenericExtSrv extSrv={extSrvs[i]} key={i} id={id} />)
     }
-    if (stripProtoUrl(a[id]) > stripProtoUrl(b[id])) {
-      return 1
-    }
-    return 0
-  })
-  // Getting jsx versions of the extensions
-  for (let i = 0; i < array.length; i++) {
-    jsx.push(<GenericExtSrv extSrv={array[i]} key={i} id={id} />)
   }
+
   return jsx
 }
-
 interface GenericExtSrvProps {
   extSrv: any
   id: string
