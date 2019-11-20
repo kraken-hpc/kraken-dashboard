@@ -225,7 +225,7 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
       const newInfo = info as NodeColorInfoArea
       if (newInfo.category === 'physState') {
         newInfo.valuesToColor.forEach(valueToColor => {
-          if (newInfo.DSCorCFG == 'CFG') {
+          if (newInfo.DSCorCFG === 'CFG') {
             if (valueToColor.value === cfg.physState) {
               colorMap.set(newAreaName, valueToColor.color)
             }
@@ -237,7 +237,7 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
         })
       } else if (newInfo.category === 'runState') {
         newInfo.valuesToColor.forEach(valueToColor => {
-          if (newInfo.DSCorCFG == 'CFG') {
+          if (newInfo.DSCorCFG === 'CFG') {
             if (valueToColor.value === cfg.runState) {
               colorMap.set(newAreaName, valueToColor.color)
             }

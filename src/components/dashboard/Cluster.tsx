@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Node as NodeInterface, uuidToBase64 } from '../../kraken-interactions/node'
+import { Node as NodeInterface } from '../../kraken-interactions/node'
 import { MasterNode } from './MasterNode'
 import { Node } from './Node'
 import { NodeColorInfo } from '../settings/NodeColor'
@@ -75,6 +75,7 @@ export class Cluster extends Component<ClusterProps> {
                     return <Node cfg={cfgNode} dsc={dscNode} key={dscNode.id} colorInfo={this.props.colorInfo} />
                   }
                 }
+                return <div />
               })}
             </div>
           </div>
