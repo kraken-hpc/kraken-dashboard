@@ -305,7 +305,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
                   className={`color-details-row`}
                   style={
                     this.state.selectedValueName === value
-                      ? { borderColor: COLORS.borderGrey, cursor: 'pointer' }
+                      ? { borderColor: COLORS.borderGrey, cursor: 'pointer', backgroundColor: '#f0f0f0' }
                       : { cursor: 'pointer' }
                   }
                   onClick={() => {
