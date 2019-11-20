@@ -84,24 +84,6 @@
   display: inline-block;
 }
 
-/* Node View stuff down here */
-.large-square {
-  border: 50px solid;
-  margin: 35px 10px;
-  border-radius: 9px;
-  float: left;
-  position: relative;
-}
-
-.node-title {
-  text-align: center;
-  margin: 0;
-  padding: 0 0 5px 0;
-  display: block;
-  border-bottom: medium solid black;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 .legend-color-value-row{
   margin: 2px 0;
 }

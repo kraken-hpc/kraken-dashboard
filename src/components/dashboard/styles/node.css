@@ -17,7 +17,7 @@
   opacity: 1;
 }
 [data-popup]:hover:before {
-  top: 14px;
+  top: 32px;
   padding: 10px 15px;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 10px;

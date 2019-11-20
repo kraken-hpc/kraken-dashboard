@@ -1,5 +1,4 @@
 import React from 'react'
-import { COLORS } from '../../config'
 import { NodeColorInfo, NodeColorInfoArea } from '../settings/NodeColor'
 
 interface LegendProps {
@@ -25,16 +24,18 @@ export function Legend(props: LegendProps) {
           <div id='left-text'>
             {props.colorInfo.LEFT.category.charAt(0).toUpperCase() + props.colorInfo.LEFT.category.slice(1)}
           </div>
-          <div
-            className={`square`}
-            style={{
-              borderTopColor: props.colorInfo.TOP.valuesToColor[0].color,
-              borderRightColor: props.colorInfo.RIGHT.valuesToColor[0].color,
-              borderBottomColor: props.colorInfo.BOTTOM.valuesToColor[0].color,
-              borderLeftColor: props.colorInfo.LEFT.valuesToColor[0].color,
-              width: '0%',
-            }}
-          />
+          <div className={`square-border`} style={{ backgroundColor: props.colorInfo.BORDER.valuesToColor[0].color }}>
+            <div
+              className={`square`}
+              style={{
+                borderTopColor: props.colorInfo.TOP.valuesToColor[0].color,
+                borderRightColor: props.colorInfo.RIGHT.valuesToColor[0].color,
+                borderBottomColor: props.colorInfo.BOTTOM.valuesToColor[0].color,
+                borderLeftColor: props.colorInfo.LEFT.valuesToColor[0].color,
+                width: '0%',
+              }}
+            />
+          </div>
           <div id='right-text'>
             {props.colorInfo.RIGHT.category.charAt(0).toUpperCase() + props.colorInfo.RIGHT.category.slice(1)}
           </div>

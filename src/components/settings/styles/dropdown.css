@@ -35,10 +35,12 @@
   overflow: hidden;
   width: 130px;
   z-index: 3;
+  visibility: hidden;
 }
 
 .dropdown-options.active {
   opacity: 100;
+  visibility: visible;
   /* height: 100px; */
 }
 
@@ -46,6 +48,7 @@
   padding: 3px 10px;
   text-align: left;
   height: 0;
+  visibility: hidden;
   opacity: 0;
   transition: 0.2s ease;
   background-color: var(--light-grey);
@@ -54,6 +57,7 @@
 }
 
 .dropdown-option.active {
+  visibility: visible;
   opacity: 100;
   height: 20px;
 }

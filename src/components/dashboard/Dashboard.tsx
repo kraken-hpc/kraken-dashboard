@@ -6,8 +6,10 @@ import { NodeColorInfo } from '../settings/NodeColor'
 
 interface DashboardProps {
   disconnected: boolean
-  masterNode: Node
-  nodes: Map<string, Node>
+  cfgMasterNode: Node
+  dscMasterNode: Node
+  cfgNodes: Map<string, Node>
+  dscNodes: Map<string, Node>
   opened: () => void
   colorInfo: NodeColorInfo
 }
@@ -20,8 +22,10 @@ export function Dashboard(props: DashboardProps) {
         <Cluster
           opened={props.opened}
           disconnected={props.disconnected}
-          masterNode={props.masterNode}
-          nodes={props.nodes}
+          cfgMasterNode={props.cfgMasterNode}
+          dscMasterNode={props.dscMasterNode}
+          cfgNodes={props.cfgNodes}
+          dscNodes={props.dscNodes}
           colorInfo={props.colorInfo}
         />
       </div>

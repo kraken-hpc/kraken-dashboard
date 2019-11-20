@@ -388,13 +388,27 @@ class App extends Component<AppProps, AppState> {
       }
     })
 
-    // Sort the Map
+    const nodeOrder: Map<string, number> = new Map() // [nodeId]index
+
+    const finalDscNodes: Map<string, Node> = new Map()
+    const finalCfgNodes: Map<string, Node> = new Map()
+
+    // Sort the Maps
     const finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
     finalNodes = new Map()
     for (let i = 0; i < finalNodesArray.length; i++) {
       const id = finalNodesArray[i].id
       if (id !== undefined) {
         finalNodes.set(id, finalNodesArray[i])
+        const dscNode = dscNodes.get(id)
+        const cfgNode = cfgNodes.get(id)
+        if (dscNode !== undefined) {
+          finalDscNodes.set(id, dscNode)
+        }
+        if (cfgNode !== undefined) {
+          finalCfgNodes.set(id, cfgNode)
+        }
+        nodeOrder.set(id, i)
       }
     }
 
@@ -408,9 +422,9 @@ class App extends Component<AppProps, AppState> {
         masterNode: finalMaster,
         nodes: finalNodes,
         cfgMaster: cfgMaster,
-        cfgNodes: cfgNodes,
+        cfgNodes: finalCfgNodes,
         dscMaster: dscMaster,
-        dscNodes: dscNodes,
+        dscNodes: finalDscNodes,
       },
       callback
     )
@@ -563,8 +577,10 @@ class App extends Component<AppProps, AppState> {
             render={() => (
               <Dashboard
                 disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
-                masterNode={this.state.masterNode}
-                nodes={this.state.nodes}
+                cfgMasterNode={this.state.cfgMaster}
+                dscMasterNode={this.state.dscMaster}
+                cfgNodes={this.state.cfgNodes}
+                dscNodes={this.state.dscNodes}
                 opened={this.stopUpdatingGraph}
                 colorInfo={this.state.colorInfo}
               />

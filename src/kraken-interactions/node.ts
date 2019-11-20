@@ -211,13 +211,13 @@ export const stateToColor = (state: KrakenState | undefined): string => {
   }
 }
 
-export const getColorsForArea = (data: Node, colorInfo: NodeColorInfo | undefined): Map<NodeArea, string> => {
+export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo | undefined): Map<NodeArea, string> => {
   const colorMap: Map<NodeArea, string> = new Map()
 
-  colorMap.set('TOP', stateToColor(data.physState))
-  colorMap.set('RIGHT', stateToColor(data.runState))
-  colorMap.set('BOTTOM', stateToColor(data.runState))
-  colorMap.set('LEFT', stateToColor(data.physState))
+  colorMap.set('TOP', stateToColor(dsc.physState))
+  colorMap.set('RIGHT', stateToColor(dsc.runState))
+  colorMap.set('BOTTOM', stateToColor(dsc.runState))
+  colorMap.set('LEFT', stateToColor(dsc.physState))
 
   if (colorInfo !== undefined) {
     Object.entries(colorInfo).forEach(([nodeAreaName, info]) => {
@@ -225,34 +225,67 @@ export const getColorsForArea = (data: Node, colorInfo: NodeColorInfo | undefine
       const newInfo = info as NodeColorInfoArea
       if (newInfo.category === 'physState') {
         newInfo.valuesToColor.forEach(valueToColor => {
-          if (valueToColor.value === data.physState) {
-            colorMap.set(newAreaName, valueToColor.color)
+          if (newInfo.DSCorCFG == 'CFG') {
+            if (valueToColor.value === cfg.physState) {
+              colorMap.set(newAreaName, valueToColor.color)
+            }
+          } else {
+            if (valueToColor.value === dsc.physState) {
+              colorMap.set(newAreaName, valueToColor.color)
+            }
           }
         })
       } else if (newInfo.category === 'runState') {
         newInfo.valuesToColor.forEach(valueToColor => {
-          if (valueToColor.value === data.runState) {
-            colorMap.set(newAreaName, valueToColor.color)
+          if (newInfo.DSCorCFG == 'CFG') {
+            if (valueToColor.value === cfg.runState) {
+              colorMap.set(newAreaName, valueToColor.color)
+            }
+          } else {
+            if (valueToColor.value === dsc.runState) {
+              colorMap.set(newAreaName, valueToColor.color)
+            }
           }
         })
       } else {
-        if (data.extensions !== undefined) {
-          data.extensions.forEach(extension => {
-            const urlLevels = getStateUrlLevels(newInfo.category)
-            if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
-              const value = getNestedValue(extension, 0, urlLevels)
-              if (value !== undefined) {
-                newInfo.valuesToColor.forEach(valueToColor => {
-                  if (valueToColor.value === value) {
-                    colorMap.set(newAreaName, valueToColor.color)
-                  }
-                })
-              } else {
-                colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
-                // console.log('got an undefined value')
+        if (newInfo.DSCorCFG === 'CFG') {
+          if (cfg.extensions !== undefined) {
+            cfg.extensions.forEach(extension => {
+              const urlLevels = getStateUrlLevels(newInfo.category)
+              if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
+                const value = getNestedValue(extension, 0, urlLevels)
+                if (value !== undefined) {
+                  newInfo.valuesToColor.forEach(valueToColor => {
+                    if (valueToColor.value === value) {
+                      colorMap.set(newAreaName, valueToColor.color)
+                    }
+                  })
+                } else {
+                  colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
+                  // console.log('got an undefined value')
+                }
               }
-            }
-          })
+            })
+          }
+        } else {
+          if (dsc.extensions !== undefined) {
+            dsc.extensions.forEach(extension => {
+              const urlLevels = getStateUrlLevels(newInfo.category)
+              if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
+                const value = getNestedValue(extension, 0, urlLevels)
+                if (value !== undefined) {
+                  newInfo.valuesToColor.forEach(valueToColor => {
+                    if (valueToColor.value === value) {
+                      colorMap.set(newAreaName, valueToColor.color)
+                    }
+                  })
+                } else {
+                  colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
+                  // console.log('got an undefined value')
+                }
+              }
+            })
+          }
         }
       }
     })

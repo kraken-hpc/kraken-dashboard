@@ -4,9 +4,9 @@
       "name": "physState",
       "url": "/physState",
       "options": [
+        "POWER_ON",
         "PHYS_UNKNOWN",
         "POWER_OFF",
-        "POWER_ON",
         "POWER_CYCLE",
         "PHYS_HANG",
         "PHYS_ERROR"
@@ -16,8 +16,8 @@
       "name": "runState",
       "url": "/runState",
       "options": [
-        "UNKNOWN",
         "INIT",
+        "UNKNOWN",
         "SYNC",
         "ERROR"
       ]

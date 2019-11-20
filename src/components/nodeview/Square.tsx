@@ -9,16 +9,23 @@ interface SquareProps {
 }
 
 export const Square = (props: SquareProps) => {
-  const colorMap: Map<NodeArea, string> = getColorsForArea(props.dscNode, props.colorInfo)
+  const colorMap: Map<NodeArea, string> = getColorsForArea(props.cfgNode, props.dscNode, props.colorInfo)
 
   return (
     <div
-      className={`large-square`}
+      className={`large-square-border`}
       style={{
-        borderTopColor: colorMap.get('TOP'),
-        borderRightColor: colorMap.get('RIGHT'),
-        borderBottomColor: colorMap.get('BOTTOM'),
-        borderLeftColor: colorMap.get('LEFT'),
-      }}></div>
+        backgroundColor: colorMap.get('BORDER'),
+      }}>
+      <div
+        className={`large-square`}
+        style={{
+          borderTopColor: colorMap.get('TOP'),
+          borderRightColor: colorMap.get('RIGHT'),
+          borderBottomColor: colorMap.get('BOTTOM'),
+          borderLeftColor: colorMap.get('LEFT'),
+        }}
+      />
+    </div>
   )
 }

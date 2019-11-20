@@ -21,6 +21,7 @@
 
 .header-link {
   text-decoration: none;
+  display: inline-block;
 }
 
 /* Settings Modal */
