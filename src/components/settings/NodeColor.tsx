@@ -387,8 +387,7 @@ interface DropDownState {
 }
 
 class DropDown extends Component<DropDownProps, DropDownState> {
-  node: HTMLDivElement | null = null
-
+  dropDownRef: HTMLDivElement | null = null
   constructor(props: DropDownProps) {
     super(props)
     this.state = {
@@ -402,7 +401,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
 
   handleClick = (e: any) => {
     // Close dropdown if click happens anywhere outside of it
-    if (this.node !== null && !this.node.contains(e.target)) {
+    if (this.dropDownRef !== null && !this.dropDownRef.contains(e.target)) {
       this.setState({
         open: false,
       })
@@ -417,7 +416,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
 
   render() {
     return (
-      <div ref={node => (this.node = node)}>
+      <div ref={node => (this.dropDownRef = node)}>
         <div className={this.state.open ? `dropdown-button active` : `dropdown-button`} onClick={this.toggleDropDown}>
           {this.props.value}
           <span className={`arrow`} />

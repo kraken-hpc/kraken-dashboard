@@ -47,6 +47,7 @@ interface SettingsAreaState {
 }
 
 class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState> {
+  buttonRef: SVGSVGElement | null = null
   constructor(props: SettingsAreaProps) {
     super(props)
 
@@ -55,7 +56,7 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
     }
   }
 
-  modalToggle() {
+  toggleMenu() {
     this.setState({
       menuOpen: !this.state.menuOpen,
     })
@@ -71,7 +72,10 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
     return (
       <React.Fragment>
         <svg
-          onClick={() => this.modalToggle()}
+          ref={node => (this.buttonRef = node)}
+          onClick={() => {
+            this.toggleMenu()
+          }}
           className={`settings`}
           id={`settings-button`}
           xmlns='http://www.w3.org/2000/svg'
@@ -83,6 +87,7 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
           />
         </svg>
         <SettingsModal
+          buttonRef={this.buttonRef}
           menuOpen={this.state.menuOpen}
           refreshRate={this.props.refreshRate}
           handleRefreshChange={this.props.handleRefreshChange}
@@ -102,6 +107,7 @@ interface SettingsModalProps {
   useWebSocket: boolean
   handleWebsocketChange: (websocket: boolean) => void
   closeMenu: () => void
+  buttonRef: SVGSVGElement | null
 }
 
 interface SettingsModalState {
@@ -111,6 +117,7 @@ interface SettingsModalState {
 }
 
 class SettingsModal extends React.Component<SettingsModalProps, SettingsModalState> {
+  modalRef: HTMLFormElement | null = null
   constructor(props: SettingsModalProps) {
     super(props)
 
@@ -129,6 +136,7 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
   }
 
   componentDidUpdate(prevProps: SettingsModalProps) {
+    document.addEventListener('mousedown', this.handleClick, false)
     if (prevProps.menuOpen !== this.props.menuOpen) {
       this.setState({
         style: {
@@ -140,9 +148,21 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
     }
   }
 
+  handleClick = (e: any) => {
+    // Close modal if click happens anywhere outside of it
+    if (
+      this.modalRef !== null &&
+      !this.modalRef.contains(e.target) &&
+      this.props.buttonRef !== null &&
+      !this.props.buttonRef.contains(e.target)
+    ) {
+      this.props.closeMenu()
+    }
+  }
+
   render() {
     return (
-      <form className={`settings`} id={`settings-modal`} style={this.state.style}>
+      <form className={`settings`} id={`settings-modal`} style={this.state.style} ref={node => (this.modalRef = node)}>
         <div className={`settings-row`}>
           <label>Reconnect Rate:</label>
           <input
