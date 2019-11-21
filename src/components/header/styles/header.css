@@ -147,3 +147,11 @@
   border-bottom-color: white;
   border-left-color: white;
 }
+
+#color-settings-button {
+  margin: 0 15px 5px 15px;
+  padding: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--dark-grey)
+}

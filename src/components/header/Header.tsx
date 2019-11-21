@@ -172,8 +172,10 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
           />
         </div>
         <div className={`settings-row`}>
-          <Link to={`/settings`}>
-            <button onClick={this.props.closeMenu}>Color Settings</button>
+          <Link to={`/settings`} style={{ textDecoration: 'none' }}>
+            <div onClick={this.props.closeMenu} id={`color-settings-button`} className={`button`}>
+              Color Settings
+            </div>
           </Link>
         </div>
       </form>
