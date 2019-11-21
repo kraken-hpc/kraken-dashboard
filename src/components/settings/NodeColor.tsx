@@ -314,7 +314,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 
   render() {
     if (this.props.stateOptions === undefined) {
-      return <div>state options undefined</div>
+      return <div>Could not get Node State Options From Kraken</div>
     }
 
     return (
