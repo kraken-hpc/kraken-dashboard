@@ -3,17 +3,9 @@ import { COLORS, cfgUrlSingle, dscUrlSingle } from '../config'
 import { cloneDeep } from 'lodash'
 import { NodeArea, NodeColorInfo, NodeColorInfoArea } from '../components/settings/NodeColor'
 
-export type KrakenState =
-  | 'PHYS_ERROR'
-  | 'ERROR'
-  | 'POWER_CYCLE'
-  | 'PHYS_HANG'
-  | 'POWER_OFF'
-  | 'PHYS_UNKNOWN'
-  | 'UNKNOWN'
-  | 'INIT'
-  | 'SYNC'
-  | 'POWER_ON'
+export type KrakenPhysState = 'PHYS_ERROR' | 'POWER_CYCLE' | 'PHYS_HANG' | 'POWER_OFF' | 'PHYS_UNKNOWN' | 'POWER_ON'
+
+export type KrakenRunState = 'ERROR' | 'UNKNOWN' | 'INIT' | 'SYNC'
 
 export type DSCorCFG = 'DSC' | 'CFG'
 
@@ -23,8 +15,8 @@ export interface Node {
   nodename?: string
   arch?: string
   platform?: string
-  physState?: KrakenState
-  runState?: KrakenState
+  physState?: KrakenPhysState
+  runState?: KrakenRunState
   extensions?: any[]
   services?: any[]
 }
@@ -193,7 +185,7 @@ export const nodeSort = (a: Node, b: Node): number => {
 }
 
 // Takes in a kraken state and returns a color for it
-export const stateToColor = (state: KrakenState | undefined): string => {
+export const stateToColor = (state: KrakenPhysState | KrakenRunState | undefined): string => {
   if (state === 'PHYS_ERROR' || state === 'ERROR' || state === 'POWER_CYCLE') {
     return COLORS.red
   } else if (state === 'PHYS_HANG') {
@@ -223,7 +215,7 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
     Object.entries(colorInfo).forEach(([nodeAreaName, info]) => {
       const newAreaName = nodeAreaName as NodeArea
       const newInfo = info as NodeColorInfoArea
-      if (newInfo.category === 'physState') {
+      if (newInfo.category === 'PhysState') {
         newInfo.valuesToColor.forEach(valueToColor => {
           if (newInfo.DSCorCFG === 'CFG') {
             if (valueToColor.value === cfg.physState) {
@@ -235,7 +227,7 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
             }
           }
         })
-      } else if (newInfo.category === 'runState') {
+      } else if (newInfo.category === 'RunState') {
         newInfo.valuesToColor.forEach(valueToColor => {
           if (newInfo.DSCorCFG === 'CFG') {
             if (valueToColor.value === cfg.runState) {

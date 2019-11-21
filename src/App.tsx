@@ -27,7 +27,7 @@ import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
 import { cloneDeep } from 'lodash'
 import { NodeColor, NodeColorInfo } from './components/settings/NodeColor'
-import { NodeStateOptions, getStateData } from './kraken-interactions/nodeStateOptions'
+import { getStateData, NodeStateCategory } from './kraken-interactions/nodeStateOptions'
 
 interface AppProps {}
 
@@ -44,7 +44,7 @@ interface AppState {
   updatingGraph: string | undefined
   graph: Graph | undefined
   colorInfo: NodeColorInfo
-  nodeStateOptions?: NodeStateOptions
+  nodeStateOptions?: NodeStateCategory[]
 }
 
 class App extends Component<AppProps, AppState> {
@@ -122,15 +122,9 @@ class App extends Component<AppProps, AppState> {
       // Start new live connection
       switch (this.state.liveConnectionActive) {
         case 'POLLING':
-          this.setState({
-            nodeStateOptions: getStateData(),
-          })
           this.startPolling()
           break
         case 'WEBSOCKET':
-          this.setState({
-            nodeStateOptions: getStateData(),
-          })
           this.startWebSocket(this.refetch)
           break
         case 'RECONNECT':
@@ -325,7 +319,7 @@ class App extends Component<AppProps, AppState> {
               case '/RunState':
                 if (
                   jsonMessage.value !== 'UNKNOWN' &&
-                  (newNode.physState === 'UNKNOWN' ||
+                  (newNode.physState === 'PHYS_UNKNOWN' ||
                     newNode.physState === 'POWER_OFF' ||
                     newNode.physState === 'PHYS_HANG')
                 ) {
@@ -521,6 +515,14 @@ class App extends Component<AppProps, AppState> {
           liveConnectionActive: 'RECONNECT',
         })
         return
+      }
+    })
+    // Get state enums
+    getStateData().then(nodeStateOptions => {
+      if (nodeStateOptions !== null) {
+        this.setState({
+          nodeStateOptions: nodeStateOptions,
+        })
       }
     })
   }

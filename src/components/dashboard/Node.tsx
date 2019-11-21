@@ -11,7 +11,7 @@ export interface NodeProps {
 
 export const Node = (props: NodeProps) => {
   if (props.dsc.physState === undefined) {
-    props.dsc.physState = 'UNKNOWN'
+    props.dsc.physState = 'PHYS_UNKNOWN'
   }
   if (props.dsc.runState === undefined) {
     props.dsc.runState = 'UNKNOWN'

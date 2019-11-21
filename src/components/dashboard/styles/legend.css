@@ -63,12 +63,14 @@
 }
 
 #right-text {
-  margin: auto 0 auto 10px;
+  margin: auto 0 auto 5px;
+  flex:1;
   width: 50%;
 }
 
 #left-text {
-  margin: auto 10px auto 0;
+  flex: 1;
+  margin: auto 5px auto 0;
   width: 50%;
 }
 

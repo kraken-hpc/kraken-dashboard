@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { NodeStateOptions, NodeStateCategory } from '../../kraken-interactions/nodeStateOptions'
+import { NodeStateCategory } from '../../kraken-interactions/nodeStateOptions'
 import { COLORS } from '../../config'
 import { SketchPicker, ColorResult } from 'react-color'
 import { DSCorCFG } from '../../kraken-interactions/node'
@@ -22,7 +22,7 @@ export interface NodeColorInfoArea {
 }
 
 interface NodeColorProps {
-  nodeStateOptions: NodeStateOptions | undefined
+  nodeStateOptions: NodeStateCategory[] | undefined
   currentColorConfig: NodeColorInfo
   changeColorInfo: (newColorInfo: NodeColorInfo) => void
 }
@@ -139,7 +139,7 @@ const NodeAreaSelector = (props: NodeAreaSelectorProps) => {
 
 interface NodeColorDetailsProps {
   selectedArea: NodeArea
-  stateOptions: NodeStateOptions | undefined
+  stateOptions: NodeStateCategory[] | undefined
   currentColorConfig: NodeColorInfo
   changeColorInfo: (newColorInfo: NodeColorInfo) => void
 }
@@ -181,7 +181,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     const selectedAreaInfo: NodeColorInfoArea = this.props.currentColorConfig[this.props.selectedArea]
 
     if (this.props.stateOptions !== undefined) {
-      availableCategories = this.props.stateOptions.state_categories
+      availableCategories = this.props.stateOptions
     }
 
     availableCategories.forEach(category => {
@@ -232,18 +232,35 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
     const newValuesToColor: { value: string; color: string }[] = []
     let newCategoryOptions: string[] = []
-    if (this.props.stateOptions !== undefined) {
-      this.props.stateOptions.state_categories.forEach(element => {
-        if (element.name === newCategory) {
-          newCategoryOptions = element.options
-        }
-      })
-    }
-    newCategoryOptions.forEach(newOption => {
-      newValuesToColor.push({ value: newOption, color: COLORS.grey })
+    let foundCategory: boolean = false
+
+    // Check if category (and dscorcfg) is being used in another node area first
+    Object.values(this.props.currentColorConfig).forEach((key: NodeColorInfoArea) => {
+      if (key.category === newCategory && key.DSCorCFG === 'DSC') {
+        // We found another area has our same category. Lets use what it has for colors
+        foundCategory = true
+        newColorInfo[this.props.selectedArea].category = newCategory
+        newColorInfo[this.props.selectedArea].DSCorCFG = 'DSC'
+        newColorInfo[this.props.selectedArea].valuesToColor = key.valuesToColor
+      }
     })
-    newColorInfo[this.props.selectedArea].category = newCategory
-    newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
+
+    // If category isn't found on another node area, create it from scratch
+    if (!foundCategory) {
+      if (this.props.stateOptions !== undefined) {
+        this.props.stateOptions.forEach(element => {
+          if (element.name === newCategory) {
+            newCategoryOptions = element.options
+          }
+        })
+      }
+      newCategoryOptions.forEach(newOption => {
+        newValuesToColor.push({ value: newOption, color: COLORS.grey })
+      })
+      newColorInfo[this.props.selectedArea].DSCorCFG = 'DSC'
+      newColorInfo[this.props.selectedArea].category = newCategory
+      newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
+    }
 
     this.props.changeColorInfo(newColorInfo)
   }
@@ -251,6 +268,17 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
   handleDSCCFGChange = (newValue: DSCorCFG) => {
     const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
     newColorInfo[this.props.selectedArea].DSCorCFG = newValue
+
+    // Check if category (and dscorcfg) is being used in another node area first
+    Object.entries(this.props.currentColorConfig).forEach(([key, value]: [string, NodeColorInfoArea]) => {
+      const keyArea = key as NodeArea
+      if (keyArea !== this.props.selectedArea) {
+        if (value.category === newColorInfo[this.props.selectedArea].category && value.DSCorCFG === newValue) {
+          // We found another area has our same category and this new DSCorCFG value. Lets use what it has for colors
+          newColorInfo[this.props.selectedArea].valuesToColor = value.valuesToColor
+        }
+      }
+    })
 
     this.props.changeColorInfo(newColorInfo)
   }
@@ -265,8 +293,21 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
         newValuesToColor.push(element)
       }
     })
-
     newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
+
+    // Check if category (and dscorcfg) is being used in another node area first
+    Object.entries(this.props.currentColorConfig).forEach(([key, value]: [string, NodeColorInfoArea]) => {
+      const keyArea = key as NodeArea
+      if (keyArea !== this.props.selectedArea) {
+        if (
+          value.category === newColorInfo[this.props.selectedArea].category &&
+          value.DSCorCFG === newColorInfo[this.props.selectedArea].DSCorCFG
+        ) {
+          // We found another area has our same category and DSCorCFG value. Lets change it's colors to what we are changing to
+          newColorInfo[keyArea].valuesToColor = newValuesToColor
+        }
+      }
+    })
 
     this.props.changeColorInfo(newColorInfo)
   }
@@ -303,6 +344,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
               return (
                 <div
                   className={`color-details-row`}
+                  key={value}
                   style={
                     this.state.selectedValueName === value
                       ? { borderColor: COLORS.borderGrey, cursor: 'pointer', backgroundColor: '#f0f0f0' }
@@ -354,7 +396,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
     }
   }
 
-  componentWillMount = () => {
+  componentDidMount = () => {
     document.addEventListener('mousedown', this.handleClick, false)
   }
 
@@ -384,6 +426,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
           {this.props.options.map((option: string) => {
             return (
               <div
+                key={option}
                 className={this.state.open ? `dropdown-option active` : `dropdown-option`}
                 onClick={() => {
                   this.props.onChange(option)

@@ -1,7 +1,6 @@
 import { NodeColorInfo } from './components/settings/NodeColor'
 
 export const KRAKEN_IP = '192.168.57.10:3141'
-// export const KRAKEN_IP = '10.15.247.252:3141'
 // Polling and Reconnecting refresh rate (time in seconds between pulls)
 export const REFRESH = 0.4
 // Should websocket be turned on by default?
@@ -13,6 +12,7 @@ export const dscUrlSingle: string = `http://${KRAKEN_IP}/dsc/node`
 export const cfgUrlSingle: string = `http://${KRAKEN_IP}/cfg/node`
 export const graphUrl: string = `http://${KRAKEN_IP}/graph/json`
 export const webSocketUrl: string = `http://${KRAKEN_IP}/ws`
+export const stateOptionsUrl: string = `http://${KRAKEN_IP}/enumerables`
 
 export const graphUrlSingle = (uuid: string): string => {
   return `http://${KRAKEN_IP}/graph/node/${uuid}/json`
@@ -34,7 +34,7 @@ export const COLORS = {
 // First value in values to color will be shown in config page
 export const defaultNodeColorInfo: NodeColorInfo = {
   TOP: {
-    category: 'physState',
+    category: 'PhysState',
     DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'POWER_ON', color: COLORS.green },
@@ -46,7 +46,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
     ],
   },
   RIGHT: {
-    category: 'runState',
+    category: 'RunState',
     DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'INIT', color: COLORS.blue },
@@ -56,7 +56,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
     ],
   },
   LEFT: {
-    category: 'physState',
+    category: 'PhysState',
     DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'POWER_ON', color: COLORS.green },
@@ -68,7 +68,7 @@ export const defaultNodeColorInfo: NodeColorInfo = {
     ],
   },
   BOTTOM: {
-    category: 'runState',
+    category: 'RunState',
     DSCorCFG: 'DSC',
     valuesToColor: [
       { value: 'INIT', color: COLORS.blue },
@@ -78,13 +78,15 @@ export const defaultNodeColorInfo: NodeColorInfo = {
     ],
   },
   BORDER: {
-    category: 'PXE/state',
+    category: 'PhysState',
     DSCorCFG: 'DSC',
     valuesToColor: [
-      { value: 'NONE', color: COLORS.grey },
-      { value: 'WAIT', color: COLORS.yellow },
-      { value: 'INIT', color: COLORS.blue },
-      { value: 'COMP', color: COLORS.green },
+      { value: 'POWER_ON', color: COLORS.green },
+      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
+      { value: 'POWER_OFF', color: COLORS.grey },
+      { value: 'POWER_CYCLE', color: COLORS.purple },
+      { value: 'PHYS_HANG', color: COLORS.purple },
+      { value: 'PHYS_ERROR', color: COLORS.red },
     ],
   },
 }
