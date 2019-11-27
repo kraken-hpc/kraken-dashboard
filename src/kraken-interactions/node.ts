@@ -210,32 +210,65 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
   colorMap.set('RIGHT', stateToColor(dsc.runState))
   colorMap.set('BOTTOM', stateToColor(dsc.runState))
   colorMap.set('LEFT', stateToColor(dsc.physState))
+  colorMap.set('BORDER', stateToColor(dsc.physState))
 
   if (colorInfo !== undefined) {
     Object.entries(colorInfo).forEach(([nodeAreaName, info]) => {
       const newAreaName = nodeAreaName as NodeArea
       const newInfo = info as NodeColorInfoArea
       if (newInfo.category === 'PhysState') {
-        newInfo.valuesToColor.forEach(valueToColor => {
+        newInfo.valuesToColor.forEach((valueToColor, valueToColorKey) => {
           if (newInfo.DSCorCFG === 'CFG') {
-            if (valueToColor.value === cfg.physState) {
+            if (valueToColorKey === cfg.physState) {
               colorMap.set(newAreaName, valueToColor.color)
+            } else if (dsc.runState === undefined) {
+              let color = COLORS.black
+              newInfo.valuesToColor.forEach(value => {
+                if (value.enum === 0) {
+                  color = value.color
+                }
+              })
+              colorMap.set(newAreaName, color)
             }
           } else {
-            if (valueToColor.value === dsc.physState) {
+            if (valueToColorKey === dsc.physState) {
               colorMap.set(newAreaName, valueToColor.color)
+            } else if (dsc.runState === undefined) {
+              let color = COLORS.black
+              newInfo.valuesToColor.forEach(value => {
+                if (value.enum === 0) {
+                  color = value.color
+                }
+              })
+              colorMap.set(newAreaName, color)
             }
           }
         })
       } else if (newInfo.category === 'RunState') {
-        newInfo.valuesToColor.forEach(valueToColor => {
+        newInfo.valuesToColor.forEach((valueToColor, valueToColorKey) => {
           if (newInfo.DSCorCFG === 'CFG') {
-            if (valueToColor.value === cfg.runState) {
+            if (valueToColorKey === cfg.runState) {
               colorMap.set(newAreaName, valueToColor.color)
+            } else if (dsc.runState === undefined) {
+              let color = COLORS.black
+              newInfo.valuesToColor.forEach(value => {
+                if (value.enum === 0) {
+                  color = value.color
+                }
+              })
+              colorMap.set(newAreaName, color)
             }
           } else {
-            if (valueToColor.value === dsc.runState) {
+            if (valueToColorKey === dsc.runState) {
               colorMap.set(newAreaName, valueToColor.color)
+            } else if (dsc.runState === undefined) {
+              let color = COLORS.black
+              newInfo.valuesToColor.forEach(value => {
+                if (value.enum === 0) {
+                  color = value.color
+                }
+              })
+              colorMap.set(newAreaName, color)
             }
           }
         })
@@ -243,18 +276,23 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
         if (newInfo.DSCorCFG === 'CFG') {
           if (cfg.extensions !== undefined) {
             cfg.extensions.forEach(extension => {
-              const urlLevels = getStateUrlLevels(newInfo.category)
+              const urlLevels = getStateUrlLevels(stripProtoUrl(newInfo.category))
               if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
                 const value = getNestedValue(extension, 0, urlLevels)
                 if (value !== undefined) {
-                  newInfo.valuesToColor.forEach(valueToColor => {
-                    if (valueToColor.value === value) {
+                  newInfo.valuesToColor.forEach((valueToColor, valueToColorKey) => {
+                    if (valueToColorKey === value) {
                       colorMap.set(newAreaName, valueToColor.color)
                     }
                   })
                 } else {
-                  colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
-                  // console.log('got an undefined value')
+                  let color = COLORS.black
+                  newInfo.valuesToColor.forEach(value => {
+                    if (value.enum === 0) {
+                      color = value.color
+                    }
+                  })
+                  colorMap.set(newAreaName, color)
                 }
               }
             })
@@ -262,18 +300,23 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
         } else {
           if (dsc.extensions !== undefined) {
             dsc.extensions.forEach(extension => {
-              const urlLevels = getStateUrlLevels(newInfo.category)
+              const urlLevels = getStateUrlLevels(stripProtoUrl(newInfo.category))
               if (stripProtoUrl(extension['@type']) === urlLevels[0]) {
                 const value = getNestedValue(extension, 0, urlLevels)
                 if (value !== undefined) {
-                  newInfo.valuesToColor.forEach(valueToColor => {
-                    if (valueToColor.value === value) {
+                  newInfo.valuesToColor.forEach((valueToColor, valueToColorKey) => {
+                    if (valueToColorKey === value) {
                       colorMap.set(newAreaName, valueToColor.color)
                     }
                   })
                 } else {
-                  colorMap.set(newAreaName, newInfo.valuesToColor[0].color)
-                  // console.log('got an undefined value')
+                  let color = COLORS.black
+                  newInfo.valuesToColor.forEach(value => {
+                    if (value.enum === 0) {
+                      color = value.color
+                    }
+                  })
+                  colorMap.set(newAreaName, color)
                 }
               }
             })
@@ -290,7 +333,7 @@ const getNestedValue = (dictionary: any, level: number, arrayOfKeys: string[]): 
   if (level === arrayOfKeys.length) {
     return undefined
   }
-  const returnValue = dictionary[arrayOfKeys[level]]
+  const returnValue = dictionary[arrayOfKeys[level].toLowerCase()]
   if (returnValue === undefined) {
     return getNestedValue(dictionary, level + 1, arrayOfKeys)
   } else {
@@ -377,11 +420,12 @@ export const base64Convert = (key: string, value: string) => {
 
 // Strips the leading string of the protobuf urls
 export const stripProtoUrl = (url: string) => {
-  return url.replace('type.googleapis.com/proto.', '')
+  const stripped = url.replace('type.googleapis.com/', '')
+  return stripped.replace('proto.', '')
 }
 
 export const getStateUrlLevels = (url: string): string[] => {
-  return url.split('/')
+  return url.split(/[/,_]+/)
 }
 
 // Sends a PUT command to set data for a node (Used for power off and power on)

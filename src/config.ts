@@ -1,6 +1,7 @@
 import { NodeColorInfo } from './components/settings/NodeColor'
 
 export const KRAKEN_IP = '192.168.57.10:3141'
+// export const KRAKEN_IP = '10.15.3.40:3141'
 // Polling and Reconnecting refresh rate (time in seconds between pulls)
 export const REFRESH = 0.4
 // Should websocket be turned on by default?
@@ -36,57 +37,57 @@ export const defaultNodeColorInfo: NodeColorInfo = {
   TOP: {
     category: 'PhysState',
     DSCorCFG: 'DSC',
-    valuesToColor: [
-      { value: 'POWER_ON', color: COLORS.green },
-      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
-      { value: 'POWER_OFF', color: COLORS.grey },
-      { value: 'POWER_CYCLE', color: COLORS.purple },
-      { value: 'PHYS_HANG', color: COLORS.purple },
-      { value: 'PHYS_ERROR', color: COLORS.red },
-    ],
+    valuesToColor: new Map([
+      ['POWER_ON', { enum: 2, color: COLORS.green }],
+      ['PHYS_UNKNOWN', { enum: 0, color: COLORS.yellow }],
+      ['POWER_OFF', { enum: 1, color: COLORS.grey }],
+      ['POWER_CYCLE', { enum: 3, color: COLORS.purple }],
+      ['PHYS_HANG', { enum: 4, color: COLORS.purple }],
+      ['PHYS_ERROR', { enum: 5, color: COLORS.red }],
+    ]),
   },
   RIGHT: {
     category: 'RunState',
     DSCorCFG: 'DSC',
-    valuesToColor: [
-      { value: 'INIT', color: COLORS.blue },
-      { value: 'UNKNOWN', color: COLORS.yellow },
-      { value: 'SYNC', color: COLORS.green },
-      { value: 'ERROR', color: COLORS.red },
-    ],
+    valuesToColor: new Map([
+      ['INIT', { enum: 1, color: COLORS.blue }],
+      ['UNKNOWN', { enum: 0, color: COLORS.yellow }],
+      ['SYNC', { enum: 2, color: COLORS.green }],
+      ['ERROR', { enum: 3, color: COLORS.red }],
+    ]),
   },
   LEFT: {
     category: 'PhysState',
     DSCorCFG: 'DSC',
-    valuesToColor: [
-      { value: 'POWER_ON', color: COLORS.green },
-      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
-      { value: 'POWER_OFF', color: COLORS.grey },
-      { value: 'POWER_CYCLE', color: COLORS.purple },
-      { value: 'PHYS_HANG', color: COLORS.purple },
-      { value: 'PHYS_ERROR', color: COLORS.red },
-    ],
+    valuesToColor: new Map([
+      ['POWER_ON', { enum: 2, color: COLORS.green }],
+      ['PHYS_UNKNOWN', { enum: 0, color: COLORS.yellow }],
+      ['POWER_OFF', { enum: 1, color: COLORS.grey }],
+      ['POWER_CYCLE', { enum: 3, color: COLORS.purple }],
+      ['PHYS_HANG', { enum: 4, color: COLORS.purple }],
+      ['PHYS_ERROR', { enum: 5, color: COLORS.red }],
+    ]),
   },
   BOTTOM: {
     category: 'RunState',
     DSCorCFG: 'DSC',
-    valuesToColor: [
-      { value: 'INIT', color: COLORS.blue },
-      { value: 'UNKNOWN', color: COLORS.yellow },
-      { value: 'SYNC', color: COLORS.green },
-      { value: 'ERROR', color: COLORS.red },
-    ],
+    valuesToColor: new Map([
+      ['INIT', { enum: 1, color: COLORS.blue }],
+      ['UNKNOWN', { enum: 0, color: COLORS.yellow }],
+      ['SYNC', { enum: 2, color: COLORS.green }],
+      ['ERROR', { enum: 3, color: COLORS.red }],
+    ]),
   },
   BORDER: {
     category: 'PhysState',
     DSCorCFG: 'DSC',
-    valuesToColor: [
-      { value: 'POWER_ON', color: COLORS.green },
-      { value: 'PHYS_UNKNOWN', color: COLORS.yellow },
-      { value: 'POWER_OFF', color: COLORS.grey },
-      { value: 'POWER_CYCLE', color: COLORS.purple },
-      { value: 'PHYS_HANG', color: COLORS.purple },
-      { value: 'PHYS_ERROR', color: COLORS.red },
-    ],
+    valuesToColor: new Map([
+      ['POWER_ON', { enum: 2, color: COLORS.green }],
+      ['PHYS_UNKNOWN', { enum: 0, color: COLORS.yellow }],
+      ['POWER_OFF', { enum: 1, color: COLORS.grey }],
+      ['POWER_CYCLE', { enum: 3, color: COLORS.purple }],
+      ['PHYS_HANG', { enum: 4, color: COLORS.purple }],
+      ['PHYS_ERROR', { enum: 5, color: COLORS.red }],
+    ]),
   },
 }

@@ -3,7 +3,7 @@ import { stateOptionsUrl } from '../config'
 
 export interface NodeStateCategory {
   name: string
-  options: string[]
+  options: Map<number, string>
   url: string
 }
 
@@ -15,23 +15,43 @@ export const getStateData = async (): Promise<NodeStateCategory[] | null> => {
     return null
   }
   const nodeStateOptions: NodeStateCategory[] = []
-  stateData.forEach((element: NodeStateCategory) => {
-    element.options.sort()
+  stateData.forEach((element: any) => {
+    console.log(element)
+    const newCategory: NodeStateCategory = {
+      name: element.name,
+      url: element.url,
+      options: new Map(),
+    }
+    const finalMap = new Map<number, string>()
     if (element.name === 'PhysState') {
-      const index = element.options.indexOf('POWER_ON')
-      if (index > -1) {
-        element.options.splice(index, 1)
-        element.options.unshift('POWER_ON')
-      }
+      // Move power_on to top of map
+      Object.entries(element.options).forEach(([key, val]) => {
+        if (val === 'POWER_ON') {
+          finalMap.set(parseInt(key), val)
+        }
+      })
+      Object.entries(element.options).forEach(([key, val]) => {
+        finalMap.set(parseInt(key), val as string)
+      })
+    } else if (element.name === 'RunState') {
+      // Move sync to top of map
+      Object.entries(element.options).forEach(([key, val]) => {
+        if (val === 'SYNC') {
+          finalMap.set(parseInt(key), val)
+        }
+      })
+      Object.entries(element.options).forEach(([key, val]) => {
+        finalMap.set(parseInt(key), val as string)
+      })
+    } else {
+      Object.entries(element.options).forEach(([key, val]) => {
+        finalMap.set(parseInt(key), val as string)
+      })
     }
-    if (element.name === 'RunState') {
-      const index = element.options.indexOf('SYNC')
-      if (index > -1) {
-        element.options.splice(index, 1)
-        element.options.unshift('SYNC')
-      }
-    }
-    nodeStateOptions.push(element)
+
+    newCategory.options = finalMap
+    nodeStateOptions.push(newCategory)
   })
+  console.log(nodeStateOptions)
   return nodeStateOptions
 }

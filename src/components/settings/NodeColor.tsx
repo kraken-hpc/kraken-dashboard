@@ -18,7 +18,7 @@ export interface NodeColorInfo {
 export interface NodeColorInfoArea {
   category: string
   DSCorCFG: DSCorCFG
-  valuesToColor: { value: string; color: string }[]
+  valuesToColor: Map<string, { enum: number; color: string }> // PHYS_UNKNOWN: [0, "#ffffff"]
 }
 
 interface NodeColorProps {
@@ -72,6 +72,11 @@ interface NodeAreaSelectorProps {
 }
 
 const NodeAreaSelector = (props: NodeAreaSelectorProps) => {
+  const border: string = Array.from(props.colorInfo.BORDER.valuesToColor.values())[0].color
+  const top: string = Array.from(props.colorInfo.TOP.valuesToColor.values())[0].color
+  const right: string = Array.from(props.colorInfo.RIGHT.valuesToColor.values())[0].color
+  const bottom: string = Array.from(props.colorInfo.BOTTOM.valuesToColor.values())[0].color
+  const left: string = Array.from(props.colorInfo.LEFT.valuesToColor.values())[0].color
   return (
     <div className={`area-selector-area`}>
       <div className={`color-square`}>
@@ -80,7 +85,7 @@ const NodeAreaSelector = (props: NodeAreaSelectorProps) => {
           className={`color-square-border-border`}
         />
         <div
-          style={{ borderColor: props.colorInfo.BORDER.valuesToColor[0].color }}
+          style={{ borderColor: border }}
           className={`color-square-border`}
           onClick={() => {
             props.changeSelectedArea('BORDER')
@@ -88,28 +93,28 @@ const NodeAreaSelector = (props: NodeAreaSelectorProps) => {
         />
         <div className={`color-square-mask`}>
           <div
-            style={{ backgroundColor: props.colorInfo.TOP.valuesToColor[0].color }}
+            style={{ backgroundColor: top }}
             className={`color-square-top`}
             onClick={() => {
               props.changeSelectedArea('TOP')
             }}
           />
           <div
-            style={{ backgroundColor: props.colorInfo.RIGHT.valuesToColor[0].color }}
+            style={{ backgroundColor: right }}
             className={`color-square-right`}
             onClick={() => {
               props.changeSelectedArea('RIGHT')
             }}
           />
           <div
-            style={{ backgroundColor: props.colorInfo.BOTTOM.valuesToColor[0].color }}
+            style={{ backgroundColor: bottom }}
             className={`color-square-bottom`}
             onClick={() => {
               props.changeSelectedArea('BOTTOM')
             }}
           />
           <div
-            style={{ backgroundColor: props.colorInfo.LEFT.valuesToColor[0].color }}
+            style={{ backgroundColor: left }}
             className={`color-square-left`}
             onClick={() => {
               props.changeSelectedArea('LEFT')
@@ -148,8 +153,8 @@ interface NodeColorDetailsState {
   selectedValueName: string
   selectedAreaInfo: NodeColorInfoArea
   availableCategoryNames: string[]
-  availableValues: string[]
-  currentColorsForAvailableValues: Map<string, string>
+  availableValues: Map<number, string>
+  currentColorsForAvailableValues: Map<string, { enum: number; color: string }>
 }
 
 class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetailsState> {
@@ -159,7 +164,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     const stateInfo = this.getState()
 
     this.state = {
-      selectedValueName: stateInfo.availableValues[0],
+      selectedValueName: Array.from(stateInfo.availableValues.values())[0],
       selectedAreaInfo: stateInfo.selectedAreaInfo,
       availableCategoryNames: stateInfo.availableCategoryNames,
       availableValues: stateInfo.availableValues,
@@ -170,13 +175,13 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
   getState = (): {
     selectedAreaInfo: NodeColorInfoArea
     availableCategoryNames: string[]
-    availableValues: string[]
-    currentColorsForAvailableValues: Map<string, string>
+    availableValues: Map<number, string>
+    currentColorsForAvailableValues: Map<string, { enum: number; color: string }>
   } => {
     let availableCategories: NodeStateCategory[] = []
-    let availableValues: string[] = []
+    let availableValues: Map<number, string> = new Map()
     let availableCategoryNames: string[] = []
-    const currentColorsForAvailableValues: Map<string, string> = new Map()
+    const currentColorsForAvailableValues: Map<string, { enum: number; color: string }> = new Map()
 
     const selectedAreaInfo: NodeColorInfoArea = this.props.currentColorConfig[this.props.selectedArea]
 
@@ -192,9 +197,9 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     })
 
     availableValues.forEach(value => {
-      this.props.currentColorConfig[this.props.selectedArea].valuesToColor.forEach(valueToColor => {
-        if (valueToColor.value === value) {
-          currentColorsForAvailableValues.set(value, valueToColor.color)
+      this.props.currentColorConfig[this.props.selectedArea].valuesToColor.forEach((valueToColor, key) => {
+        if (key === value) {
+          currentColorsForAvailableValues.set(value, { enum: valueToColor.enum, color: valueToColor.color })
         }
       })
     })
@@ -205,7 +210,7 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
   componentDidUpdate = (prevProps: NodeColorDetailsProps) => {
     if (prevProps !== this.props) {
       const stateInfo = this.getState()
-      let selectedValueName = stateInfo.availableValues[0]
+      let selectedValueName = Array.from(stateInfo.availableValues.values())[0]
       if (
         this.state.selectedValueName !== undefined &&
         stateInfo.currentColorsForAvailableValues.get(this.state.selectedValueName) !== undefined
@@ -230,8 +235,8 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 
   handleCategoryChange = (newCategory: string) => {
     const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
-    const newValuesToColor: { value: string; color: string }[] = []
-    let newCategoryOptions: string[] = []
+    const newValuesToColor: Map<string, { enum: number; color: string }> = new Map()
+    let newCategoryOptions: Map<number, string> = new Map()
     let foundCategory: boolean = false
 
     // Check if category (and dscorcfg) is being used in another node area first
@@ -254,8 +259,8 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
           }
         })
       }
-      newCategoryOptions.forEach(newOption => {
-        newValuesToColor.push({ value: newOption, color: COLORS.grey })
+      newCategoryOptions.forEach((newOptionValue, newOptionKey) => {
+        newValuesToColor.set(newOptionValue, { enum: newOptionKey, color: COLORS.grey })
       })
       newColorInfo[this.props.selectedArea].DSCorCFG = 'DSC'
       newColorInfo[this.props.selectedArea].category = newCategory
@@ -285,12 +290,12 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
 
   handleColorChange = (newColor: ColorResult) => {
     const newColorInfo: NodeColorInfo = cloneDeep(this.props.currentColorConfig)
-    const newValuesToColor: { value: string; color: string }[] = []
-    newColorInfo[this.props.selectedArea].valuesToColor.forEach(element => {
-      if (element.value === this.state.selectedValueName) {
-        newValuesToColor.push({ value: element.value, color: newColor.hex })
+    const newValuesToColor: Map<string, { enum: number; color: string }> = new Map()
+    newColorInfo[this.props.selectedArea].valuesToColor.forEach((elementValue, elementKey) => {
+      if (elementKey === this.state.selectedValueName) {
+        newValuesToColor.set(elementKey, { enum: elementValue.enum, color: newColor.hex })
       } else {
-        newValuesToColor.push(element)
+        newValuesToColor.set(elementKey, elementValue)
       }
     })
     newColorInfo[this.props.selectedArea].valuesToColor = newValuesToColor
@@ -316,7 +321,11 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
     if (this.props.stateOptions === undefined) {
       return <div>Could Not Get Node State Options From Kraken</div>
     }
-
+    let selectedValueColor = COLORS.black
+    const selectedValue = this.state.currentColorsForAvailableValues.get(this.state.selectedValueName)
+    if (selectedValue !== undefined) {
+      selectedValueColor = selectedValue.color
+    }
     return (
       <div className={`color-details-area`}>
         <h1>{this.props.selectedArea}</h1>
@@ -340,34 +349,36 @@ class NodeColorDetails extends Component<NodeColorDetailsProps, NodeColorDetails
             </div>
           </div>
           <div>
-            {this.state.availableValues.map(value => {
-              return (
-                <div
-                  className={`color-details-row`}
-                  key={value}
-                  style={
-                    this.state.selectedValueName === value
-                      ? { borderColor: COLORS.borderGrey, cursor: 'pointer', backgroundColor: '#f0f0f0' }
-                      : { cursor: 'pointer' }
-                  }
-                  onClick={() => {
-                    this.changeSelectedValue(value)
-                  }}>
+            {Array.from(this.state.availableValues.entries())
+              .sort(enumSort)
+              .map(value => {
+                return (
                   <div
-                    className={`color-details-row-key`}
-                    style={{ display: 'inline-block', margin: 'auto 10px' }}>{`${value}:`}</div>
-                  <div
-                    className={`color-details-current-square`}
-                    style={{ backgroundColor: this.state.currentColorsForAvailableValues.get(value) }}
-                  />
-                </div>
-              )
-            })}
+                    className={`color-details-row`}
+                    key={value[0]}
+                    style={
+                      this.state.selectedValueName === value[1]
+                        ? { borderColor: COLORS.borderGrey, cursor: 'pointer', backgroundColor: '#f0f0f0' }
+                        : { cursor: 'pointer' }
+                    }
+                    onClick={() => {
+                      this.changeSelectedValue(value[1])
+                    }}>
+                    <div
+                      className={`color-details-row-key`}
+                      style={{ display: 'inline-block', margin: 'auto 10px' }}>{`${value[1]}:`}</div>
+                    <div
+                      className={`color-details-current-square`}
+                      style={{ backgroundColor: getColor(this.state.currentColorsForAvailableValues, value[1]) }}
+                    />
+                  </div>
+                )
+              })}
           </div>
           <SketchPicker
             presetColors={Object.values(COLORS)}
             disableAlpha={true}
-            color={this.state.currentColorsForAvailableValues.get(this.state.selectedValueName)}
+            color={selectedValueColor}
             onChange={this.handleColorChange}
           />
         </div>
@@ -418,7 +429,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
     return (
       <div ref={node => (this.dropDownRef = node)}>
         <div className={this.state.open ? `dropdown-button active` : `dropdown-button`} onClick={this.toggleDropDown}>
-          {this.props.value}
+          {this.props.value.replace('proto.', '')}
           <span className={`arrow`} />
         </div>
         <div className={`dropdown-options`}>
@@ -433,7 +444,7 @@ class DropDown extends Component<DropDownProps, DropDownState> {
                     open: false,
                   })
                 }}>
-                {option}
+                {option.replace('proto.', '')}
               </div>
             )
           })}
@@ -441,4 +452,22 @@ class DropDown extends Component<DropDownProps, DropDownState> {
       </div>
     )
   }
+}
+
+const enumSort = ([aEnum, aValue]: [number, string], [bEnum, bValue]: [number, string]): number => {
+  if (aEnum < bEnum) {
+    return -1
+  }
+  if (aEnum > bEnum) {
+    return 1
+  }
+  return 0
+}
+
+const getColor = (inputMap: Map<string, { enum: number; color: string }>, key: string): string => {
+  const returnVal = inputMap.get(key)
+  if (returnVal !== undefined) {
+    return returnVal.color
+  }
+  return COLORS.black
 }

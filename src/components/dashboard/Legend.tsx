@@ -98,14 +98,16 @@ export class Legend extends Component<LegendProps, LegendState> {
               style={this.state.leftWidth !== null ? { width: `${this.state.leftWidth}px` } : {}}>
               {legendColorInfo.LEFT.category.charAt(0).toUpperCase() + legendColorInfo.LEFT.category.slice(1)}
             </div>
-            <div className={`square-border`} style={{ backgroundColor: legendColorInfo.BORDER.valuesToColor[0].color }}>
+            <div
+              className={`square-border`}
+              style={{ backgroundColor: Array.from(legendColorInfo.BORDER.valuesToColor.values())[0].color }}>
               <div
                 className={`square`}
                 style={{
-                  borderTopColor: legendColorInfo.TOP.valuesToColor[0].color,
-                  borderRightColor: legendColorInfo.RIGHT.valuesToColor[0].color,
-                  borderBottomColor: legendColorInfo.BOTTOM.valuesToColor[0].color,
-                  borderLeftColor: legendColorInfo.LEFT.valuesToColor[0].color,
+                  borderTopColor: Array.from(legendColorInfo.TOP.valuesToColor.values())[0].color,
+                  borderRightColor: Array.from(legendColorInfo.RIGHT.valuesToColor.values())[0].color,
+                  borderBottomColor: Array.from(legendColorInfo.BOTTOM.valuesToColor.values())[0].color,
+                  borderLeftColor: Array.from(legendColorInfo.LEFT.valuesToColor.values())[0].color,
                   width: '0%',
                 }}
               />
@@ -142,11 +144,11 @@ const Category = (props: CategoryProps): JSX.Element => {
     <div>
       <div className={`legend-category-title`}>{`${props.nodeColorInfoArea.category.charAt(0).toUpperCase() +
         props.nodeColorInfoArea.category.slice(1)}:`}</div>
-      {props.nodeColorInfoArea.valuesToColor.map(valuesToColor => {
+      {Array.from(props.nodeColorInfoArea.valuesToColor.entries()).map(([valuesToColorKey, valuesToColor]) => {
         return (
-          <div className={`legend-color-value-row`} key={valuesToColor.value}>
+          <div className={`legend-color-value-row`} key={valuesToColor.enum}>
             <div className={`legend-color`} style={{ backgroundColor: valuesToColor.color }} />
-            <div className={`legend-value`}>{valuesToColor.value}</div>
+            <div className={`legend-value`}>{valuesToColorKey}</div>
           </div>
         )
       })}

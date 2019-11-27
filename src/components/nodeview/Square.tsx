@@ -9,6 +9,13 @@ interface SquareProps {
 }
 
 export const Square = (props: SquareProps) => {
+  if (props.dscNode.physState === undefined) {
+    props.dscNode.physState = 'PHYS_UNKNOWN'
+  }
+  if (props.dscNode.runState === undefined) {
+    props.dscNode.runState = 'UNKNOWN'
+  }
+
   const colorMap: Map<NodeArea, string> = getColorsForArea(props.cfgNode, props.dscNode, props.colorInfo)
 
   return (

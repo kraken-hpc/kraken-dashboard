@@ -1,5 +1,5 @@
 .dropdown-button {
-  width: 110px;
+  width: 120px;
   height: 20px;
   background-color: var(--light-grey);
   transition: all 0.2s ease;
@@ -33,7 +33,7 @@
 .dropdown-options {
   position: absolute;
   overflow: hidden;
-  width: 130px;
+  width: 140px;
   z-index: 3;
   visibility: hidden;
 }
