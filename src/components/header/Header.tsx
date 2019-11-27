@@ -111,8 +111,8 @@ interface SettingsModalProps {
 }
 
 interface SettingsModalState {
-  topHeight: string
-  bottomHeight: string
+  openTop: string
+  closedTop: string
   style: CSS.Properties
 }
 
@@ -121,16 +121,16 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
   constructor(props: SettingsModalProps) {
     super(props)
 
-    const topHeight = '7rem'
-    const bottomHeight = '8rem'
+    const openTop = '7rem'
+    const closedTop = '6rem'
 
     this.state = {
-      topHeight: topHeight,
-      bottomHeight: bottomHeight,
+      openTop: openTop,
+      closedTop: closedTop,
       style: {
         opacity: this.props.menuOpen ? 100 : 0,
         visibility: this.props.menuOpen ? 'visible' : 'hidden',
-        top: this.props.menuOpen ? topHeight : bottomHeight,
+        top: this.props.menuOpen ? openTop : closedTop,
       },
     }
   }
@@ -142,7 +142,7 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
         style: {
           opacity: this.props.menuOpen ? 100 : 0,
           visibility: this.props.menuOpen ? 'visible' : 'hidden',
-          top: this.props.menuOpen ? this.state.topHeight : this.state.bottomHeight,
+          top: this.props.menuOpen ? this.state.openTop : this.state.closedTop,
         },
       })
     }

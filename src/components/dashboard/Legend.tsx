@@ -90,14 +90,18 @@ export class Legend extends Component<LegendProps, LegendState> {
         <div className='legend-title'>Legend</div>
         <div className='row' id='first-row'>
           <div id='top-text'>
-            {legendColorInfo.TOP.category.charAt(0).toUpperCase() + legendColorInfo.TOP.category.slice(1)}
+            {stripProtoUrl(legendColorInfo.TOP.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.TOP.category).slice(1)}
           </div>
           <div id='middle-row'>
             <div
               id='left-text'
               ref={this.leftText}
               style={this.state.leftWidth !== null ? { width: `${this.state.leftWidth}px` } : {}}>
-              {legendColorInfo.LEFT.category.charAt(0).toUpperCase() + legendColorInfo.LEFT.category.slice(1)}
+              {stripProtoUrl(legendColorInfo.LEFT.category)
+                .charAt(0)
+                .toUpperCase() + stripProtoUrl(legendColorInfo.LEFT.category).slice(1)}
             </div>
             <div
               className={`square-border`}
@@ -117,14 +121,20 @@ export class Legend extends Component<LegendProps, LegendState> {
               id='right-text'
               ref={this.rightText}
               style={this.state.rightWidth !== null ? { width: `${this.state.rightWidth}px` } : {}}>
-              {legendColorInfo.RIGHT.category.charAt(0).toUpperCase() + legendColorInfo.RIGHT.category.slice(1)}
+              {stripProtoUrl(legendColorInfo.RIGHT.category)
+                .charAt(0)
+                .toUpperCase() + stripProtoUrl(legendColorInfo.RIGHT.category).slice(1)}
             </div>
           </div>
           <div id='bottom-text'>
-            {legendColorInfo.BOTTOM.category.charAt(0).toUpperCase() + legendColorInfo.BOTTOM.category.slice(1)}
+            {stripProtoUrl(legendColorInfo.BOTTOM.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.BOTTOM.category).slice(1)}
           </div>
           <div id='border-text'>
-            {legendColorInfo.BORDER.category.charAt(0).toUpperCase() + legendColorInfo.BORDER.category.slice(1)}
+            {stripProtoUrl(legendColorInfo.BORDER.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.BORDER.category).slice(1)}
           </div>
         </div>
 
