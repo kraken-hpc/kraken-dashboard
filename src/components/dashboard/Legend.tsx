@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { NodeColorInfo, NodeColorInfoArea, NodeArea } from '../settings/NodeColor'
 import { cloneDeep } from 'lodash'
+import { stripProtoUrl } from '../../kraken-interactions/node'
 
 interface LegendProps {
   colorInfo: NodeColorInfo
@@ -142,8 +143,9 @@ interface CategoryProps {
 const Category = (props: CategoryProps): JSX.Element => {
   return (
     <div>
-      <div className={`legend-category-title`}>{`${props.nodeColorInfoArea.category.charAt(0).toUpperCase() +
-        props.nodeColorInfoArea.category.slice(1)}:`}</div>
+      <div className={`legend-category-title`}>{`${stripProtoUrl(props.nodeColorInfoArea.category)
+        .charAt(0)
+        .toUpperCase() + stripProtoUrl(props.nodeColorInfoArea.category).slice(1)}:`}</div>
       {Array.from(props.nodeColorInfoArea.valuesToColor.entries()).map(([valuesToColorKey, valuesToColor]) => {
         return (
           <div className={`legend-color-value-row`} key={valuesToColor.enum}>
