@@ -254,8 +254,8 @@ class App extends Component<AppProps, AppState> {
           }
         }
 
-        this.websocket.onclose = () => {
-          console.warn('Websocket closed unexpectedly')
+        this.websocket.onclose = ev => {
+          console.warn('Websocket closed unexpectedly', ev)
           this.setState({
             liveConnectionActive: 'RECONNECT',
           })

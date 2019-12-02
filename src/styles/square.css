@@ -2,15 +2,15 @@
   display: inline-block;
   border: 15px solid;
   border-radius: 8px;
-  margin: 2px;
+  margin: 3px;
 }
 
 .square-border {
   display: inline-block;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   margin: 2px;
-  border-radius: 10px;
+  border-radius: 11px;
   background-color: transparent;
 }
 
@@ -23,10 +23,10 @@
 }
 
 .master-square-border{
-  padding: 2px;
+  padding: 3px;
   display: block;
   margin: 0px 0px 10px 0px;
-  border-radius: 9px;
+  border-radius: 10px;
   text-decoration: none;
 }
 
@@ -37,7 +37,7 @@
 
 .large-square-border {
   display: inline-block;
-  padding: 4px;
+  padding: 5px;
   margin: 35px 10px;
-  border-radius: 18px;
+  border-radius: 19px;
 }

@@ -16,7 +16,6 @@ export const getStateData = async (): Promise<NodeStateCategory[] | null> => {
   }
   const nodeStateOptions: NodeStateCategory[] = []
   stateData.forEach((element: any) => {
-    console.log(element)
     const newCategory: NodeStateCategory = {
       name: element.name,
       url: element.url,
@@ -52,6 +51,5 @@ export const getStateData = async (): Promise<NodeStateCategory[] | null> => {
     newCategory.options = finalMap
     nodeStateOptions.push(newCategory)
   })
-  console.log(nodeStateOptions)
   return nodeStateOptions
 }
