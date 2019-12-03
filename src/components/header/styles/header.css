@@ -21,6 +21,7 @@
 
 .header-link {
   text-decoration: none;
+  display: inline-block;
 }
 
 /* Settings Modal */
@@ -31,7 +32,7 @@
   top: 1.75rem;
   right: 1.75rem;
   font-family: Arial, Helvetica, sans-serif;
-  z-index: 1;
+  z-index: 100;
 }
 
 #settings-button {
@@ -52,14 +53,14 @@
   /* height: 200px; */
   background-color: white;
   padding: 10px;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 10px;
   /* margin: 2px; */
   /* top: em; */
   /* visibility: hidden;
     opacity: 0; */
   /* transform: scale(1) translateX(0) translateY(6rem); */
-  transition: all 0.2s ease-out;
+  transition: all 0.1s ease;
 }
 
 /* #settings-modal .modal.active {
@@ -145,4 +146,12 @@
   border-top-color: white;
   border-bottom-color: white;
   border-left-color: white;
+}
+
+#color-settings-button {
+  margin: 0 15px 5px 15px;
+  padding: 5px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--dark-grey)
 }

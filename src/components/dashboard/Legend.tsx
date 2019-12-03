@@ -1,50 +1,169 @@
-import React from 'react'
-import { COLORS } from '../../config'
+import React, { Component } from 'react'
+import { NodeColorInfo, NodeColorInfoArea, NodeArea } from '../settings/NodeColor'
+import { cloneDeep } from 'lodash'
+import { stripProtoUrl } from '../../kraken-interactions/node'
 
-export function Legend() {
+interface LegendProps {
+  colorInfo: NodeColorInfo
+}
+
+interface LegendState {
+  leftWidth: number | undefined
+  rightWidth: number | undefined
+}
+
+export class Legend extends Component<LegendProps, LegendState> {
+  leftText: React.RefObject<any>
+  rightText: React.RefObject<any>
+  constructor(props: LegendProps) {
+    super(props)
+    this.leftText = React.createRef()
+    this.rightText = React.createRef()
+    this.state = {
+      leftWidth: undefined,
+      rightWidth: undefined,
+    }
+  }
+
+  sortCategories = (categoriesUsed: Map<string, NodeColorInfoArea>): NodeColorInfoArea[] => {
+    let finalCategories: NodeColorInfoArea[] = []
+
+    categoriesUsed.forEach((colorInfo, name) => {
+      const newColorInfo: NodeColorInfoArea = cloneDeep(colorInfo)
+      newColorInfo.category = name
+      finalCategories.push(newColorInfo)
+    })
+
+    finalCategories = finalCategories.sort((a, b) => {
+      return a.category.localeCompare(b.category)
+    })
+
+    return finalCategories
+  }
+
+  componentDidMount = () => {
+    if (this.leftText.current.offsetWidth > this.rightText.current.offsetWidth) {
+      this.setState({
+        rightWidth: this.leftText.current.offsetWidth + 7,
+      })
+    } else if (this.leftText.current.offsetWidth < this.rightText.current.offsetWidth) {
+      this.setState({
+        leftWidth: this.rightText.current.offsetWidth + 7,
+      })
+    }
+  }
+
+  render = () => {
+    const categoriesUsed: Map<string, NodeColorInfoArea> = new Map()
+    const legendColorInfo: NodeColorInfo = cloneDeep(this.props.colorInfo)
+
+    Object.entries(legendColorInfo).forEach(([nodeArea, colorInfo]: [string, NodeColorInfoArea]) => {
+      categoriesUsed.set(colorInfo.category, colorInfo)
+      // Check if another area has the same category but a different dsc/cfg value
+      Object.entries(legendColorInfo).forEach(([otherNodeArea, otherColorInfo]: [string, NodeColorInfoArea]) => {
+        if (nodeArea !== otherNodeArea) {
+          if (otherColorInfo.category === colorInfo.category && otherColorInfo.DSCorCFG !== colorInfo.DSCorCFG) {
+            categoriesUsed.set(`${colorInfo.category}(${colorInfo.DSCorCFG})`, colorInfo)
+            categoriesUsed.delete(colorInfo.category)
+          }
+        }
+      })
+    })
+
+    Object.entries(this.props.colorInfo).forEach(([nodeArea, colorInfo]: [string, NodeColorInfoArea]) => {
+      const newNodeArea = nodeArea as NodeArea
+      const categoryUsed = categoriesUsed.get(colorInfo.category)
+      if (categoryUsed === undefined) {
+        // This area had it's name changed
+        categoriesUsed.forEach((otherColorInfo, otherCategoryName) => {
+          if (colorInfo.category === otherColorInfo.category && colorInfo.DSCorCFG === otherColorInfo.DSCorCFG) {
+            legendColorInfo[newNodeArea].category = otherCategoryName
+          }
+        })
+      }
+    })
+
+    const finalCategoriesUsed = this.sortCategories(categoriesUsed)
+
+    return (
+      <div className='legend'>
+        <div className='legend-title'>Legend</div>
+        <div className='row' id='first-row'>
+          <div id='top-text'>
+            {stripProtoUrl(legendColorInfo.TOP.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.TOP.category).slice(1)}
+          </div>
+          <div id='middle-row'>
+            <div
+              id='left-text'
+              ref={this.leftText}
+              style={this.state.leftWidth !== null ? { width: `${this.state.leftWidth}px` } : {}}>
+              {stripProtoUrl(legendColorInfo.LEFT.category)
+                .charAt(0)
+                .toUpperCase() + stripProtoUrl(legendColorInfo.LEFT.category).slice(1)}
+            </div>
+            <div
+              className={`square-border`}
+              style={{ backgroundColor: Array.from(legendColorInfo.BORDER.valuesToColor.values())[0].color }}>
+              <div
+                className={`square`}
+                style={{
+                  borderTopColor: Array.from(legendColorInfo.TOP.valuesToColor.values())[0].color,
+                  borderRightColor: Array.from(legendColorInfo.RIGHT.valuesToColor.values())[0].color,
+                  borderBottomColor: Array.from(legendColorInfo.BOTTOM.valuesToColor.values())[0].color,
+                  borderLeftColor: Array.from(legendColorInfo.LEFT.valuesToColor.values())[0].color,
+                  width: '0%',
+                }}
+              />
+            </div>
+            <div
+              id='right-text'
+              ref={this.rightText}
+              style={this.state.rightWidth !== null ? { width: `${this.state.rightWidth}px` } : {}}>
+              {stripProtoUrl(legendColorInfo.RIGHT.category)
+                .charAt(0)
+                .toUpperCase() + stripProtoUrl(legendColorInfo.RIGHT.category).slice(1)}
+            </div>
+          </div>
+          <div id='bottom-text'>
+            {stripProtoUrl(legendColorInfo.BOTTOM.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.BOTTOM.category).slice(1)}
+          </div>
+          <div id='border-text'>
+            {stripProtoUrl(legendColorInfo.BORDER.category)
+              .charAt(0)
+              .toUpperCase() + stripProtoUrl(legendColorInfo.BORDER.category).slice(1)}
+          </div>
+        </div>
+
+        {finalCategoriesUsed.map((colorInfo: NodeColorInfoArea) => {
+          return <Category nodeColorInfoArea={colorInfo} key={colorInfo.category} />
+        })}
+      </div>
+    )
+  }
+}
+
+interface CategoryProps {
+  nodeColorInfoArea: NodeColorInfoArea
+}
+
+const Category = (props: CategoryProps): JSX.Element => {
   return (
-    <div className='legend'>
-      <div className='legend-title'>Legend</div>
-      <div className='row' id='first-row'>
-        <div className='value' id='phys-text'>
-          Phys
-        </div>
-        <div
-          className={`square`}
-          style={{
-            borderTopColor: COLORS.grey,
-            borderRightColor: COLORS.black,
-            borderBottomColor: COLORS.black,
-            borderLeftColor: COLORS.grey,
-          }}></div>
-        <div className='value' id='run-text'>
-          Run
-        </div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.yellow }}></div>
-        <div className='value'>State Unknown</div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.grey }}></div>
-        <div className='value'>Power Off</div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.blue }}></div>
-        <div className='value'>Initializing</div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.green }}></div>
-        <div className='value'>Power On / Sync</div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.purple }}></div>
-        <div className='value'>Hang</div>
-      </div>
-      <div className='row'>
-        <div className={`square`} style={{ borderColor: COLORS.red }}></div>
-        <div className='value'>Error</div>
-      </div>
+    <div>
+      <div className={`legend-category-title`}>{`${stripProtoUrl(props.nodeColorInfoArea.category)
+        .charAt(0)
+        .toUpperCase() + stripProtoUrl(props.nodeColorInfoArea.category).slice(1)}:`}</div>
+      {Array.from(props.nodeColorInfoArea.valuesToColor.entries()).map(([valuesToColorKey, valuesToColor]) => {
+        return (
+          <div className={`legend-color-value-row`} key={valuesToColor.enum}>
+            <div className={`legend-color`} style={{ backgroundColor: valuesToColor.color }} />
+            <div className={`legend-value`}>{valuesToColorKey}</div>
+          </div>
+        )
+      })}
     </div>
   )
 }

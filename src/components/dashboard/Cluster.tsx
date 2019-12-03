@@ -2,12 +2,16 @@ import React, { Component } from 'react'
 import { Node as NodeInterface } from '../../kraken-interactions/node'
 import { MasterNode } from './MasterNode'
 import { Node } from './Node'
+import { NodeColorInfo } from '../settings/NodeColor'
 
 interface ClusterProps {
   disconnected: boolean
-  masterNode: NodeInterface
-  nodes: Map<string, NodeInterface>
+  cfgMasterNode: NodeInterface
+  dscMasterNode: NodeInterface
+  cfgNodes: Map<string, NodeInterface>
+  dscNodes: Map<string, NodeInterface>
   opened: () => void
+  colorInfo: NodeColorInfo
 }
 
 export class Cluster extends Component<ClusterProps> {
@@ -45,7 +49,7 @@ export class Cluster extends Component<ClusterProps> {
   }
 
   render = () => {
-    const counts = this.stateCount(this.props.nodes)
+    const counts = this.stateCount(this.props.dscNodes)
     return (
       <React.Fragment>
         {this.props.disconnected && (
@@ -58,14 +62,20 @@ export class Cluster extends Component<ClusterProps> {
             Disconnected From Kraken
           </h2>
         )}
-        {this.props.nodes.size === 0 && this.props.masterNode.id === undefined ? (
+        {this.props.dscNodes.size === 0 && this.props.cfgMasterNode.id === undefined ? (
           <h3 style={{ fontFamily: 'Arial' }}>Loading...</h3>
         ) : (
           <div className='cluster'>
-            <MasterNode data={this.props.masterNode} />
+            <MasterNode dsc={this.props.dscMasterNode} cfg={this.props.cfgMasterNode} />
             <div className='cluster-nodelist'>
-              {Array.from(this.props.nodes.values()).map(node => {
-                return <Node data={node} key={node.id} />
+              {Array.from(this.props.dscNodes.values()).map(dscNode => {
+                if (dscNode.id !== undefined) {
+                  const cfgNode = this.props.cfgNodes.get(dscNode.id)
+                  if (cfgNode !== undefined) {
+                    return <Node cfg={cfgNode} dsc={dscNode} key={dscNode.id} colorInfo={this.props.colorInfo} />
+                  }
+                }
+                return <div />
               })}
             </div>
           </div>

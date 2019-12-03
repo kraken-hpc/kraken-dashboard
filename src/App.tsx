@@ -3,9 +3,11 @@ import './styles/square.css'
 import './components/header/styles/header.css'
 import './components/dashboard/styles/dashboard.css'
 import './components/nodeview/styles/nodeview.css'
+import './components/settings/styles/nodecolor.css'
+import './components/settings/styles/dropdown.css'
 
 import React, { Component } from 'react'
-import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle } from './config'
+import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle, defaultNodeColorInfo } from './config'
 import { HashRouter, Route } from 'react-router-dom'
 import { Header } from './components/header/Header'
 import { Dashboard } from './components/dashboard/Dashboard'
@@ -17,12 +19,19 @@ import {
   cfgNodeFetch,
   base64ToUuid,
   allNodeFetch,
+  mergeDSCandCFG,
+  updateFromWsMessage,
+  WsMessage,
+  KrakenPhysState,
+  KrakenRunState,
 } from './kraken-interactions/node'
 import { LiveConnectionType } from './kraken-interactions/live'
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
 import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
 import { cloneDeep } from 'lodash'
+import { NodeColor, NodeColorInfo } from './components/settings/NodeColor'
+import { getStateData, NodeStateCategory } from './kraken-interactions/nodeStateOptions'
 
 interface AppProps {}
 
@@ -38,6 +47,8 @@ interface AppState {
   dscNodes: Map<string, Node>
   updatingGraph: string | undefined
   graph: Graph | undefined
+  colorInfo: NodeColorInfo
+  nodeStateOptions?: NodeStateCategory[]
 }
 
 class App extends Component<AppProps, AppState> {
@@ -59,6 +70,7 @@ class App extends Component<AppProps, AppState> {
       liveConnectionActive: 'REFETCH',
       updatingGraph: undefined,
       graph: undefined,
+      colorInfo: defaultNodeColorInfo,
     }
   }
 
@@ -220,7 +232,7 @@ class App extends Component<AppProps, AppState> {
     }
     fetchJsonFromUrl(webSocketUrl)
       .then(json => {
-        const wsurl = `ws://${json.websocket.host}:${json.websocket.port}${json.websocket.url}`
+        const wsurl = `ws://${json.host}:${json.port}${json.url}`
         this.websocket = new WebSocket(wsurl)
 
         this.websocket.onopen = () => {
@@ -240,14 +252,14 @@ class App extends Component<AppProps, AppState> {
 
         this.websocket.onmessage = message => {
           const jsonMessage = JSON.parse(message.data)
-          console.log('websocket received this message:', jsonMessage)
+          // console.log('websocket received this message:', jsonMessage)
           if (jsonMessage !== null) {
             this.handleWebSocketMessage(jsonMessage)
           }
         }
 
-        this.websocket.onclose = () => {
-          console.warn('Websocket closed unexpectedly')
+        this.websocket.onclose = ev => {
+          console.warn('Websocket closed unexpectedly', ev)
           this.setState({
             liveConnectionActive: 'RECONNECT',
           })
@@ -282,7 +294,7 @@ class App extends Component<AppProps, AppState> {
           })
           break
         } else {
-          const jsonMessage = jsonData[i]
+          const jsonMessage: WsMessage = jsonData[i]
           // This is a physstate or runstate update
           if (jsonMessage.url === '/PhysState' || jsonMessage.url === '/RunState') {
             const base64Id = uuidToBase64(jsonMessage.nodeid)
@@ -297,8 +309,8 @@ class App extends Component<AppProps, AppState> {
             }
             switch (jsonMessage.url) {
               case '/PhysState':
-                newNode.physState = jsonMessage.value
-                newDscNode.physState = jsonMessage.value
+                newNode.physState = jsonMessage.value as KrakenPhysState
+                newDscNode.physState = jsonMessage.value as KrakenPhysState
                 if (jsonMessage.value === 'POWER_OFF') {
                   newNode.runState = 'UNKNOWN'
                   newDscNode.runState = 'UNKNOWN'
@@ -311,7 +323,7 @@ class App extends Component<AppProps, AppState> {
               case '/RunState':
                 if (
                   jsonMessage.value !== 'UNKNOWN' &&
-                  (newNode.physState === 'UNKNOWN' ||
+                  (newNode.physState === 'PHYS_UNKNOWN' ||
                     newNode.physState === 'POWER_OFF' ||
                     newNode.physState === 'PHYS_HANG')
                 ) {
@@ -323,8 +335,8 @@ class App extends Component<AppProps, AppState> {
                   })
                   break
                 } else {
-                  newNode.runState = jsonMessage.value
-                  newDscNode.runState = jsonMessage.value
+                  newNode.runState = jsonMessage.value as KrakenRunState
+                  newDscNode.runState = jsonMessage.value as KrakenRunState
                   // newNodes.set(base64Id, newNode)
                   break
                 }
@@ -332,6 +344,28 @@ class App extends Component<AppProps, AppState> {
                 break
             }
             dscUpdateHappened = true
+          } else if (jsonMessage.url.includes('type.googleapis.com')) {
+            // This is an extensions update
+            const base64Id = uuidToBase64(jsonMessage.nodeid)
+            let newNode = newNodes.get(base64Id)
+            let newDscNode = newDscNodes.get(base64Id)
+            if (newNode === undefined || newDscNode === undefined) {
+              console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
+              this.setState({
+                liveConnectionActive: 'REFETCH',
+              })
+              break
+            }
+            const updatedNode = updateFromWsMessage(newNode, jsonMessage)
+            if (updatedNode !== undefined) {
+              newNode = updatedNode
+              dscUpdateHappened = true
+            }
+            const updatedDscNode = updateFromWsMessage(newDscNode, jsonMessage)
+            if (updatedDscNode !== undefined) {
+              newDscNode = updatedDscNode
+              dscUpdateHappened = true
+            }
           }
         }
       } else if (
@@ -357,24 +391,44 @@ class App extends Component<AppProps, AppState> {
     dscNodes: Map<string, Node>,
     callback?: () => void
   ) => {
-    let finalNodes = cloneDeep(cfgNodes)
+    let newCfgNodes = cloneDeep(cfgNodes)
+    let finalNodes: Map<string, Node> = new Map()
 
     // Set the dsc physstate and runstate to the final nodes value
-    finalNodes.forEach((value, key, map) => {
+    newCfgNodes.forEach((value, key, map) => {
       const dscNode = dscNodes.get(key)
       if (dscNode !== undefined) {
-        value.physState = dscNode.physState
-        value.runState = dscNode.runState
+        const newValue = mergeDSCandCFG(value, dscNode)
+
+        if (newValue.id !== undefined) {
+          finalNodes.set(newValue.id, newValue)
+        }
+        // value.physState = dscNode.physState
+        // value.runState = dscNode.runState
       }
     })
 
-    // Sort the Map
+    const nodeOrder: Map<string, number> = new Map() // [nodeId]index
+
+    const finalDscNodes: Map<string, Node> = new Map()
+    const finalCfgNodes: Map<string, Node> = new Map()
+
+    // Sort the Maps
     const finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
     finalNodes = new Map()
     for (let i = 0; i < finalNodesArray.length; i++) {
       const id = finalNodesArray[i].id
       if (id !== undefined) {
         finalNodes.set(id, finalNodesArray[i])
+        const dscNode = dscNodes.get(id)
+        const cfgNode = cfgNodes.get(id)
+        if (dscNode !== undefined) {
+          finalDscNodes.set(id, dscNode)
+        }
+        if (cfgNode !== undefined) {
+          finalCfgNodes.set(id, cfgNode)
+        }
+        nodeOrder.set(id, i)
       }
     }
 
@@ -388,9 +442,9 @@ class App extends Component<AppProps, AppState> {
         masterNode: finalMaster,
         nodes: finalNodes,
         cfgMaster: cfgMaster,
-        cfgNodes: cfgNodes,
+        cfgNodes: finalCfgNodes,
         dscMaster: dscMaster,
-        dscNodes: dscNodes,
+        dscNodes: finalDscNodes,
       },
       callback
     )
@@ -489,6 +543,14 @@ class App extends Component<AppProps, AppState> {
         return
       }
     })
+    // Get state enums
+    getStateData().then(nodeStateOptions => {
+      if (nodeStateOptions !== null) {
+        this.setState({
+          nodeStateOptions: nodeStateOptions,
+        })
+      }
+    })
   }
 
   getGraph = (uuid: string) => {
@@ -518,6 +580,12 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
+  changeColorInfo = (newColorInfo: NodeColorInfo) => {
+    this.setState({
+      colorInfo: newColorInfo,
+    })
+  }
+
   render() {
     return (
       <HashRouter>
@@ -537,9 +605,12 @@ class App extends Component<AppProps, AppState> {
             render={() => (
               <Dashboard
                 disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
-                masterNode={this.state.masterNode}
-                nodes={this.state.nodes}
+                cfgMasterNode={this.state.cfgMaster}
+                dscMasterNode={this.state.dscMaster}
+                cfgNodes={this.state.cfgNodes}
+                dscNodes={this.state.dscNodes}
                 opened={this.stopUpdatingGraph}
+                colorInfo={this.state.colorInfo}
               />
             )}
           />
@@ -564,6 +635,18 @@ class App extends Component<AppProps, AppState> {
                   }
                 }}
                 graph={this.state.graph}
+                colorInfo={this.state.colorInfo}
+              />
+            )}
+          />
+          <Route
+            exact
+            path='/settings'
+            render={() => (
+              <NodeColor
+                nodeStateOptions={this.state.nodeStateOptions}
+                currentColorConfig={this.state.colorInfo}
+                changeColorInfo={this.changeColorInfo}
               />
             )}
           />

@@ -31,7 +31,7 @@
   /* top: 125px; */
   position: relative;
   padding: 12px 7px 2px 7px;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 10px;
   margin: 20px 15px 5px 15px;
   text-align: left;
@@ -46,7 +46,7 @@
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   background-color: white;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 8px;
 }
 
@@ -55,7 +55,7 @@
   font-weight: bold;
   position: relative;
   padding: 5px 5px 3px 5px;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 8px;
   margin: 5px 23px;
   text-align: left;
@@ -106,14 +106,14 @@
   font-family: Arial, Helvetica, sans-serif;
   z-index: 1;
   background-color: white;
-  border: medium solid var(--border-gray);
+  border: medium solid var(--border-grey);
   border-radius: 10px;
 }
 
 .cfg-dsc-row{
   display: block;
   text-align: left;
-  /* border: medium solid var(--border-gray);
+  /* border: medium solid var(--border-grey);
   border-radius: 10px; */
   margin: 5px 2px;
   padding: 2px 0;

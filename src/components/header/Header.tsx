@@ -47,6 +47,7 @@ interface SettingsAreaState {
 }
 
 class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState> {
+  buttonRef: SVGSVGElement | null = null
   constructor(props: SettingsAreaProps) {
     super(props)
 
@@ -55,9 +56,15 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
     }
   }
 
-  modalToggle() {
+  toggleMenu() {
     this.setState({
       menuOpen: !this.state.menuOpen,
+    })
+  }
+
+  closeMenu = () => {
+    this.setState({
+      menuOpen: false,
     })
   }
 
@@ -65,7 +72,10 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
     return (
       <React.Fragment>
         <svg
-          onClick={() => this.modalToggle()}
+          ref={node => (this.buttonRef = node)}
+          onClick={() => {
+            this.toggleMenu()
+          }}
           className={`settings`}
           id={`settings-button`}
           xmlns='http://www.w3.org/2000/svg'
@@ -77,11 +87,13 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
           />
         </svg>
         <SettingsModal
+          buttonRef={this.buttonRef}
           menuOpen={this.state.menuOpen}
           refreshRate={this.props.refreshRate}
           handleRefreshChange={this.props.handleRefreshChange}
           useWebSocket={this.props.useWebSocket}
           handleWebsocketChange={this.props.handleWebsocketChange}
+          closeMenu={this.closeMenu}
         />
       </React.Fragment>
     )
@@ -94,47 +106,63 @@ interface SettingsModalProps {
   handleRefreshChange: (refreshRate: number) => void
   useWebSocket: boolean
   handleWebsocketChange: (websocket: boolean) => void
+  closeMenu: () => void
+  buttonRef: SVGSVGElement | null
 }
 
 interface SettingsModalState {
-  topHeight: string
-  bottomHeight: string
+  openTop: string
+  closedTop: string
   style: CSS.Properties
 }
 
 class SettingsModal extends React.Component<SettingsModalProps, SettingsModalState> {
+  modalRef: HTMLFormElement | null = null
   constructor(props: SettingsModalProps) {
     super(props)
 
-    const topHeight = '7rem'
-    const bottomHeight = '8rem'
+    const openTop = '7rem'
+    const closedTop = '6rem'
 
     this.state = {
-      topHeight: topHeight,
-      bottomHeight: bottomHeight,
+      openTop: openTop,
+      closedTop: closedTop,
       style: {
         opacity: this.props.menuOpen ? 100 : 0,
         visibility: this.props.menuOpen ? 'visible' : 'hidden',
-        top: this.props.menuOpen ? topHeight : bottomHeight,
+        top: this.props.menuOpen ? openTop : closedTop,
       },
     }
   }
 
   componentDidUpdate(prevProps: SettingsModalProps) {
+    document.addEventListener('mousedown', this.handleClick, false)
     if (prevProps.menuOpen !== this.props.menuOpen) {
       this.setState({
         style: {
           opacity: this.props.menuOpen ? 100 : 0,
           visibility: this.props.menuOpen ? 'visible' : 'hidden',
-          top: this.props.menuOpen ? this.state.topHeight : this.state.bottomHeight,
+          top: this.props.menuOpen ? this.state.openTop : this.state.closedTop,
         },
       })
     }
   }
 
+  handleClick = (e: any) => {
+    // Close modal if click happens anywhere outside of it
+    if (
+      this.modalRef !== null &&
+      !this.modalRef.contains(e.target) &&
+      this.props.buttonRef !== null &&
+      !this.props.buttonRef.contains(e.target)
+    ) {
+      this.props.closeMenu()
+    }
+  }
+
   render() {
     return (
-      <form className={`settings`} id={`settings-modal`} style={this.state.style}>
+      <form className={`settings`} id={`settings-modal`} style={this.state.style} ref={node => (this.modalRef = node)}>
         <div className={`settings-row`}>
           <label>Reconnect Rate:</label>
           <input
@@ -162,6 +190,13 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
               this.props.handleWebsocketChange(!this.props.useWebSocket)
             }}
           />
+        </div>
+        <div className={`settings-row`}>
+          <Link to={`/settings`} style={{ textDecoration: 'none' }}>
+            <div onClick={this.props.closeMenu} id={`color-settings-button`} className={`button`}>
+              Color Settings
+            </div>
+          </Link>
         </div>
       </form>
     )

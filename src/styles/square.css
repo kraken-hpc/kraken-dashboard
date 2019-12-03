@@ -1,27 +1,43 @@
 .square {
   display: inline-block;
   border: 15px solid;
-  margin: 2px;
   border-radius: 8px;
+  margin: 3px;
+}
+
+.square-border {
+  display: inline-block;
+  width: 36px;
+  height: 36px;
+  margin: 2px;
+  border-radius: 11px;
+  background-color: transparent;
 }
 
 .master-square {
-  display: block;
-  /* border: 15px solid; */
-  padding: 5px 15px;
-  margin: 0px 0px 10px 0px;
-  border-radius: 8px;
-  font-family: Arial, Helvetica, sans-serif;
   color: white;
   font-size: 1.2rem;
+  font-family: Arial, Helvetica, sans-serif;
+  border-radius: 7px;
+  padding: 5px 15px;
+}
+
+.master-square-border{
+  padding: 3px;
+  display: block;
+  margin: 0px 0px 10px 0px;
+  border-radius: 10px;
   text-decoration: none;
 }
 
 .large-square {
-  display: inline-block;
   border: 50px solid;
+  border-radius: 14px;
+}
+
+.large-square-border {
+  display: inline-block;
+  padding: 5px;
   margin: 35px 10px;
-  border-radius: 9px;
-  float: left;
-  position: relative;
+  border-radius: 19px;
 }

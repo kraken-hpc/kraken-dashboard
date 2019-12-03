@@ -1,0 +1,199 @@
+.node-color-area{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.color-details-area{
+  flex-grow: 1;
+}
+
+.area-selector-area{
+  display: inline-block;
+  text-align: right;
+  margin: 5px;
+  margin-top: 25px;
+  width: 30%;
+  min-width: 220px;
+  min-height: 220px;
+}
+
+.color-square{
+  display:inline-block;
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+.color-square-border-border{
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  border-width: 5px;
+  border-style: solid;
+  border-radius: 40px;
+}
+
+.color-square-border{
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  margin: 5px;
+  width: 200px;
+  height: 200px;
+  z-index: 2;
+  border-radius: 35px;
+  border-width: 10px;
+  border-style: solid;
+  cursor: pointer;
+}
+
+.color-square-mask{
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  z-index: 4;
+  top: 15px;
+  margin: 0 15px;
+  border-radius: 19px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.color-square-mask .color-square-top{
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -143px;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  transform: rotate(45deg);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.color-square-mask .color-square-right{
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -143px;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  transform: rotate(45deg);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.color-square-mask .color-square-bottom{
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -143px;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  transform: rotate(45deg);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.color-square-mask .color-square-left{
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -143px;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  transform: rotate(45deg);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.color-square-top-border{
+  position: absolute;
+  margin: 10px;
+  border-width: 100px;
+  border-color: transparent;
+  border-style: solid;
+  border-radius: 25px;
+  z-index: 3;
+}
+
+.color-square-right-border{
+  position: absolute;
+  margin: 10px;
+  border-width: 100px;
+  border-color: transparent;
+  border-style: solid;
+  border-radius: 25px;
+  z-index: 3;
+}
+
+.color-square-bottom-border{
+  position: absolute;
+  margin: 10px;
+  border-width: 100px;
+  border-color: transparent;
+  border-style: solid;
+  border-radius: 25px;
+  z-index: 3;
+}
+
+.color-square-left-border{
+  position: absolute;
+  margin: 10px;
+  border-width: 100px;
+  border-color: transparent;
+  border-style: solid;
+  border-radius: 25px;
+  z-index: 3;
+}
+
+.color-details-row{
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 20px 0 10px;
+  padding: 3px;
+  border: 2px solid transparent;
+  border-radius: 7px;
+}
+
+
+.color-details-row-key{
+  display: inline-block;
+  text-align: right;
+  margin: auto 10px;
+}
+
+.color-details-current-square{
+  width: 35px;
+  height: 13px;
+  border-radius: 5px;
+  margin: auto 0;
+}
+
+.color-selection-area{
+  display:flex;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.category-and-dsc{
+  flex-shrink: 0;
+}
+
+.value-options{
+  flex-shrink: 0;
+}
+
+.sketch-picker-container{
+  min-width: 80px;
+}

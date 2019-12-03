@@ -1,0 +1,54 @@
+{
+  "state_categories": [
+    {
+      "name": "physState",
+      "url": "/physState",
+      "options": [
+        "POWER_ON",
+        "PHYS_UNKNOWN",
+        "POWER_OFF",
+        "POWER_CYCLE",
+        "PHYS_HANG",
+        "PHYS_ERROR"
+      ]
+    },
+    {
+      "name": "runState",
+      "url": "/runState",
+      "options": [
+        "INIT",
+        "UNKNOWN",
+        "SYNC",
+        "ERROR"
+      ]
+    },
+    {
+      "name": "PXE/method",
+      "url": "type.googleapis.com/proto.PXE/method",
+      "options": [
+        "PXE",
+        "IPXE"
+      ]
+    },
+    {
+      "name": "PXE/state",
+      "url": "type.googleapis.com/proto.PXE/state",
+      "options": [
+        "NONE",
+        "WAIT",
+        "INIT",
+        "COMP"
+      ]
+    },
+    {
+      "name": "VBox/pxe",
+      "url": "type.googleapis.com/proto.VBox/pxe",
+      "options": [
+        "NONE",
+        "WAIT",
+        "INIT",
+        "COMP"
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import { NodeDetails } from './NodeDetails'
 import { Actions } from './Actions'
 import { Graph } from '../../kraken-interactions/graph'
 import { NodeGraph } from './NodeGraph'
+import { NodeColorInfo } from '../settings/NodeColor'
 
 interface NodeViewProps {
   disconnected: boolean
@@ -12,6 +13,7 @@ interface NodeViewProps {
   dscNode: Node | undefined
   opened: () => void
   graph: Graph | undefined
+  colorInfo: NodeColorInfo
 }
 
 export interface NodeViewState {
@@ -48,7 +50,7 @@ export class NodeView extends Component<NodeViewProps, NodeViewState> {
         ) : (
           <React.Fragment>
             <div className={`node-view`}>
-              <Square dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} />
+              <Square dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} colorInfo={this.props.colorInfo} />
               <NodeDetails dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} />
               <Actions dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} graphToggle={this.graphToggle} />
             </div>
