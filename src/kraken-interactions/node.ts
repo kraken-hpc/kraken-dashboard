@@ -21,6 +21,14 @@ export interface Node {
   services?: any[]
 }
 
+export interface WsMessage {
+  nodeid: string
+  url: string
+  type: number
+  value: string
+  data: string
+}
+
 export const cfgNodeFetch = async (
   url: string
 ): Promise<{
@@ -329,6 +337,20 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
   return colorMap
 }
 
+export const updateFromWsMessage = (node: Node, jsonMessage: WsMessage): Node | undefined => {
+  if (node.id !== undefined) {
+    if (uuidToBase64(jsonMessage.nodeid) !== node.id) {
+      console.error('node id does not match', jsonMessage.nodeid.toUpperCase(), node.id.toUpperCase())
+      return undefined
+    }
+  } else {
+    console.error('node id is undefined')
+    return undefined
+  }
+
+  return setValueFromUrl(jsonMessage.url, node, jsonMessage.value)
+}
+
 const getNestedValue = (dictionary: any, level: number, arrayOfKeys: string[]): string | undefined => {
   if (level === arrayOfKeys.length) {
     return undefined
@@ -338,6 +360,49 @@ const getNestedValue = (dictionary: any, level: number, arrayOfKeys: string[]): 
     return getNestedValue(dictionary, level + 1, arrayOfKeys)
   } else {
     return returnValue
+  }
+}
+
+const setNestedValue = (dictionary: any, level: number, arrayOfKeys: string[], value: any): any => {
+  if (level === arrayOfKeys.length) {
+    return undefined
+  }
+  if (level === arrayOfKeys.length - 1) {
+    dictionary[arrayOfKeys[level].toLowerCase()] = value
+    return dictionary
+  } else {
+    const returnValue = dictionary[arrayOfKeys[level].toLowerCase()]
+    if (returnValue === undefined) {
+      return returnValue
+    } else {
+      return getNestedValue(returnValue, level + 1, arrayOfKeys)
+    }
+  }
+}
+
+const setValueFromUrl = (url: string, node: Node, value: any): Node | undefined => {
+  let updatedNode = false
+  let levels = getStateUrlLevels(url)
+  if (levels[0].includes('type.googleapis.com')) {
+    const extName = levels[0] + '/' + levels[1]
+    levels = levels.slice(2, levels.length)
+    if (node.extensions !== undefined) {
+      node.extensions.forEach(extension => {
+        if (extension['@type'] === extName) {
+          const newExtension = setNestedValue(extension, 0, levels, value)
+          if (newExtension !== undefined) {
+            extension = newExtension
+            updatedNode = true
+            return node
+          }
+        }
+      })
+    }
+  }
+  if (updatedNode) {
+    return node
+  } else {
+    return undefined
   }
 }
 

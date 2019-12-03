@@ -20,6 +20,10 @@ import {
   base64ToUuid,
   allNodeFetch,
   mergeDSCandCFG,
+  updateFromWsMessage,
+  WsMessage,
+  KrakenPhysState,
+  KrakenRunState,
 } from './kraken-interactions/node'
 import { LiveConnectionType } from './kraken-interactions/live'
 import { fetchJsonFromUrl } from './kraken-interactions/fetch'
@@ -228,7 +232,7 @@ class App extends Component<AppProps, AppState> {
     }
     fetchJsonFromUrl(webSocketUrl)
       .then(json => {
-        const wsurl = `ws://${json.websocket.host}:${json.websocket.port}${json.websocket.url}`
+        const wsurl = `ws://${json.host}:${json.port}${json.url}`
         this.websocket = new WebSocket(wsurl)
 
         this.websocket.onopen = () => {
@@ -237,6 +241,7 @@ class App extends Component<AppProps, AppState> {
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_CHANGE' }))
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_MUTATION' }))
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'DISCOVERY' }))
+            console.log(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_CHANGE' }))
             connectedCallBack()
           } else {
             console.warn('Websocket is somehow undefined')
@@ -290,7 +295,7 @@ class App extends Component<AppProps, AppState> {
           })
           break
         } else {
-          const jsonMessage = jsonData[i]
+          const jsonMessage: WsMessage = jsonData[i]
           // This is a physstate or runstate update
           if (jsonMessage.url === '/PhysState' || jsonMessage.url === '/RunState') {
             const base64Id = uuidToBase64(jsonMessage.nodeid)
@@ -305,8 +310,8 @@ class App extends Component<AppProps, AppState> {
             }
             switch (jsonMessage.url) {
               case '/PhysState':
-                newNode.physState = jsonMessage.value
-                newDscNode.physState = jsonMessage.value
+                newNode.physState = jsonMessage.value as KrakenPhysState
+                newDscNode.physState = jsonMessage.value as KrakenPhysState
                 if (jsonMessage.value === 'POWER_OFF') {
                   newNode.runState = 'UNKNOWN'
                   newDscNode.runState = 'UNKNOWN'
@@ -331,8 +336,8 @@ class App extends Component<AppProps, AppState> {
                   })
                   break
                 } else {
-                  newNode.runState = jsonMessage.value
-                  newDscNode.runState = jsonMessage.value
+                  newNode.runState = jsonMessage.value as KrakenRunState
+                  newDscNode.runState = jsonMessage.value as KrakenRunState
                   // newNodes.set(base64Id, newNode)
                   break
                 }
@@ -340,6 +345,28 @@ class App extends Component<AppProps, AppState> {
                 break
             }
             dscUpdateHappened = true
+          } else if (jsonMessage.url.includes('type.googleapis.com')) {
+            // This is an extensions update
+            const base64Id = uuidToBase64(jsonMessage.nodeid)
+            let newNode = newNodes.get(base64Id)
+            let newDscNode = newDscNodes.get(base64Id)
+            if (newNode === undefined || newDscNode === undefined) {
+              console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
+              this.setState({
+                liveConnectionActive: 'REFETCH',
+              })
+              break
+            }
+            const updatedNode = updateFromWsMessage(newNode, jsonMessage)
+            if (updatedNode !== undefined) {
+              newNode = updatedNode
+              dscUpdateHappened = true
+            }
+            const updatedDscNode = updateFromWsMessage(newDscNode, jsonMessage)
+            if (updatedDscNode !== undefined) {
+              newDscNode = updatedDscNode
+              dscUpdateHappened = true
+            }
           }
         }
       } else if (
