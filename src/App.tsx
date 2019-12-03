@@ -241,7 +241,6 @@ class App extends Component<AppProps, AppState> {
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_CHANGE' }))
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_MUTATION' }))
             this.websocket.send(JSON.stringify({ command: 'SUBSCRIBE', type: 'DISCOVERY' }))
-            console.log(JSON.stringify({ command: 'SUBSCRIBE', type: 'STATE_CHANGE' }))
             connectedCallBack()
           } else {
             console.warn('Websocket is somehow undefined')
@@ -253,7 +252,7 @@ class App extends Component<AppProps, AppState> {
 
         this.websocket.onmessage = message => {
           const jsonMessage = JSON.parse(message.data)
-          console.log('websocket received this message:', jsonMessage)
+          // console.log('websocket received this message:', jsonMessage)
           if (jsonMessage !== null) {
             this.handleWebSocketMessage(jsonMessage)
           }

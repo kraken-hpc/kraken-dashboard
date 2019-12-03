@@ -495,17 +495,14 @@ export const getStateUrlLevels = (url: string): string[] => {
 
 // Sends a PUT command to set data for a node (Used for power off and power on)
 export const putNode = (url: string, data: Node, callback?: () => void) => {
-  return (
-    fetch(url, {
-      headers: { 'Content-Type': 'application/json' },
-      method: 'PUT',
-      body: JSON.stringify(data),
-    })
-      .then(res => res.json())
-      // .then(response => console.log('Success:', JSON.stringify(response)))
-      .then(callback)
-      .catch(error => console.error('putNode error:', error))
-  )
+  return fetch(url, {
+    headers: { 'Content-Type': 'application/json' },
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+    .then(res => res.json())
+    .then(callback)
+    .catch(error => console.error('putNode error:', error))
 }
 
 // Powers on a node
