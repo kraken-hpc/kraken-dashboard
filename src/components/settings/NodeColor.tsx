@@ -15,10 +15,36 @@ export interface NodeColorInfo {
   BORDER: NodeColorInfoArea
 }
 
+export const ColorInfoToJsonString = (colorInfo: NodeColorInfo): string => {
+  return `{"TOP":${ColorInfoAreaToJsonString(colorInfo.TOP)},"RIGHT":${ColorInfoAreaToJsonString(
+    colorInfo.RIGHT
+  )},"LEFT":${ColorInfoAreaToJsonString(colorInfo.LEFT)},"BOTTOM":${ColorInfoAreaToJsonString(
+    colorInfo.BOTTOM
+  )},"BORDER":${ColorInfoAreaToJsonString(colorInfo.BORDER)}}`
+}
+
 export interface NodeColorInfoArea {
   category: string
   DSCorCFG: DSCorCFG
   valuesToColor: Map<string, { enum: number; color: string }> // PHYS_UNKNOWN: [0, "#ffffff"]
+}
+
+const ColorInfoAreaToJsonString = (colorInfoArea: NodeColorInfoArea) => {
+  let valuesToColorJson: any = {}
+  colorInfoArea.valuesToColor.forEach((value, key) => {
+    valuesToColorJson[key] = value
+  })
+  return `{"category":"${colorInfoArea.category}","DSCorCFG":"${
+    colorInfoArea.DSCorCFG
+  }","valuesToColor":${JSON.stringify(valuesToColorJson)}}`
+}
+
+export const ValuesToColorFromJSON = (input: any): Map<string, { enum: number; color: string }> => {
+  const finalMap: Map<string, { enum: number; color: string }> = new Map()
+  Object.entries(input).forEach(([key, value]: [string, any]) => {
+    finalMap.set(key, { enum: value.enum, color: value.color })
+  })
+  return finalMap
 }
 
 interface NodeColorProps {

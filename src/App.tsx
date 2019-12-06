@@ -30,7 +30,13 @@ import { fetchJsonFromUrl } from './kraken-interactions/fetch'
 import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
 import { cloneDeep } from 'lodash'
-import { NodeColor, NodeColorInfo } from './components/settings/NodeColor'
+import {
+  NodeColor,
+  NodeColorInfo,
+  ColorInfoToJsonString,
+  ValuesToColorFromJSON,
+  NodeColorInfoArea,
+} from './components/settings/NodeColor'
 import { getStateData, NodeStateCategory } from './kraken-interactions/nodeStateOptions'
 
 interface AppProps {}
@@ -546,9 +552,12 @@ class App extends Component<AppProps, AppState> {
     // Get state enums
     getStateData().then(nodeStateOptions => {
       if (nodeStateOptions !== null) {
-        this.setState({
-          nodeStateOptions: nodeStateOptions,
-        })
+        this.setState(
+          {
+            nodeStateOptions: nodeStateOptions,
+          },
+          this.getStoredColorInfo
+        )
       }
     })
   }
@@ -584,6 +593,38 @@ class App extends Component<AppProps, AppState> {
     this.setState({
       colorInfo: newColorInfo,
     })
+    // Save new color config to disk
+    localStorage.setItem('colorInfo', ColorInfoToJsonString(newColorInfo))
+  }
+
+  getStoredColorInfo = () => {
+    // Get colorinfo from localstorage
+    const colorInfoString = localStorage.getItem('colorInfo')
+    if (colorInfoString !== null) {
+      // Parse json string into correct format
+      const colorInfoJson: NodeColorInfo = JSON.parse(colorInfoString)
+      Object.entries(colorInfoJson).forEach(([key, value]: [string, NodeColorInfoArea]) => {
+        value.valuesToColor = ValuesToColorFromJSON(value.valuesToColor)
+      })
+
+      // Check if the stored color information contains an unknown category
+      if (this.state.nodeStateOptions !== undefined) {
+        const availableCategories: string[] = []
+        this.state.nodeStateOptions.forEach(value => {
+          availableCategories.push(value.name)
+        })
+        Object.entries(colorInfoJson).forEach(([key, value]: [string, NodeColorInfoArea]) => {
+          if (!availableCategories.includes(value.category)) {
+            console.log("Stored color info contains a category that this kraken doesn't know about. Using defaults.")
+            // localStorage.removeItem('colorInfo')
+            return
+          }
+        })
+      }
+      this.setState({
+        colorInfo: colorInfoJson,
+      })
+    }
   }
 
   render() {
