@@ -490,7 +490,11 @@ export const stripProtoUrl = (url: string) => {
 }
 
 export const getStateUrlLevels = (url: string): string[] => {
-  return url.split(/[/,_]+/)
+  let split: string[] | undefined = url.split(/[/,_]+/)
+  if (split.length > 1 && split[0] === '') {
+    split.shift()
+  }
+  return split
 }
 
 // Sends a PUT command to set data for a node (Used for power off and power on)
