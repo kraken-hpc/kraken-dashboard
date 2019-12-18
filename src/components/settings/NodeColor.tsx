@@ -419,65 +419,19 @@ interface DropDownProps {
   onChange: (newValue: any) => void
 }
 
-interface DropDownState {
-  open: boolean
-}
-
-class DropDown extends Component<DropDownProps, DropDownState> {
-  dropDownRef: HTMLDivElement | null = null
-  constructor(props: DropDownProps) {
-    super(props)
-    this.state = {
-      open: false,
-    }
-  }
-
-  componentDidMount = () => {
-    document.addEventListener('mousedown', this.handleClick, false)
-  }
-
-  handleClick = (e: any) => {
-    // Close dropdown if click happens anywhere outside of it
-    if (this.dropDownRef !== null && !this.dropDownRef.contains(e.target)) {
-      this.setState({
-        open: false,
-      })
-    }
-  }
-
-  toggleDropDown = () => {
-    this.setState({
-      open: !this.state.open,
-    })
-  }
-
-  render() {
-    return (
-      <div ref={node => (this.dropDownRef = node)}>
-        <div className={this.state.open ? `dropdown-button active` : `dropdown-button`} onClick={this.toggleDropDown}>
-          {this.props.value.replace('proto.', '')}
-          <span className={`arrow`} />
-        </div>
-        <div className={`dropdown-options`}>
-          {this.props.options.map((option: string) => {
-            return (
-              <div
-                key={option}
-                className={this.state.open ? `dropdown-option active` : `dropdown-option`}
-                onClick={() => {
-                  this.props.onChange(option)
-                  this.setState({
-                    open: false,
-                  })
-                }}>
-                {option.replace('proto.', '')}
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
+const DropDown = (props: DropDownProps) => {
+  return (
+    <select
+      className={`dropdown`}
+      value={props.value.replace('proto.', '')}
+      onChange={event => {
+        props.onChange(event.target.value)
+      }}>
+      {props.options.map((option: string) => {
+        return <option key={option}>{option.replace('proto.', '')}</option>
+      })}
+    </select>
+  )
 }
 
 const enumSort = ([aEnum, aValue]: [number, string], [bEnum, bValue]: [number, string]): number => {

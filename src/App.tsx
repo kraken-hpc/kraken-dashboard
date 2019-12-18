@@ -613,13 +613,19 @@ class App extends Component<AppProps, AppState> {
         this.state.nodeStateOptions.forEach(value => {
           availableCategories.push(value.name)
         })
+        let unknownFound = false
         Object.entries(colorInfoJson).forEach(([key, value]: [string, NodeColorInfoArea]) => {
           if (!availableCategories.includes(value.category)) {
             console.log("Stored color info contains a category that this kraken doesn't know about. Using defaults.")
+            unknownFound = true
             // localStorage.removeItem('colorInfo')
-            return
           }
         })
+        if (unknownFound) {
+          return
+        }
+      } else {
+        return
       }
       this.setState({
         colorInfo: colorInfoJson,
