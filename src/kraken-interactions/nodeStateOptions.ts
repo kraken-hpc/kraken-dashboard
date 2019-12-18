@@ -1,5 +1,6 @@
 import { fetchJsonFromUrl } from './fetch'
 import { stateOptionsUrl } from '../config'
+import { getStateUrlLevels, stripProtoUrl } from './node'
 
 export interface NodeStateCategory {
   name: string
@@ -43,6 +44,8 @@ export const getStateData = async (): Promise<NodeStateCategory[] | null> => {
         finalMap.set(parseInt(key), val as string)
       })
     } else {
+      const levels = getStateUrlLevels(newCategory.url)
+      newCategory.name = stripProtoUrl(levels[levels.length - 2]) + '/' + element.name
       Object.entries(element.options).forEach(([key, val]) => {
         finalMap.set(parseInt(key), val as string)
       })
