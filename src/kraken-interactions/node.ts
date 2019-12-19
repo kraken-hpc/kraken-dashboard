@@ -1,5 +1,5 @@
 import { fetchNodeListFromUrl, fetchAllNodesFromUrls } from './fetch'
-import { COLORS, cfgUrlSingle, dscUrlSingle } from '../config'
+import { COLORS } from '../config'
 import { cloneDeep } from 'lodash'
 import { NodeArea, NodeColorInfo, NodeColorInfoArea } from '../components/settings/NodeColor'
 
@@ -510,15 +510,15 @@ export const putNode = (url: string, data: Node, callback?: () => void) => {
 }
 
 // Powers on a node
-export const powerOnNode = (cfgNode: Node) => {
+export const powerOnNode = (cfgNode: Node, cfgUrl: string) => {
   cfgNode.runState = 'SYNC'
   cfgNode.physState = 'POWER_ON'
 
-  putNode(cfgUrlSingle, cfgNode)
+  putNode(cfgUrl, cfgNode)
 }
 
 // Powers off a node
-export const powerOffNode = (cfgNode: Node, dscNode: Node) => {
+export const powerOffNode = (cfgNode: Node, dscNode: Node, cfgUrl: string, dscUrl: string) => {
   cfgNode.physState = 'POWER_OFF'
   cfgNode.runState = 'UNKNOWN'
   if (cfgNode.extensions !== undefined) {
@@ -542,8 +542,8 @@ export const powerOffNode = (cfgNode: Node, dscNode: Node) => {
     }
   }
 
-  putNode(dscUrlSingle, dscNode, () => {
-    putNode(cfgUrlSingle, cfgNode)
+  putNode(dscUrl, dscNode, () => {
+    putNode(cfgUrl, cfgNode)
   })
 }
 

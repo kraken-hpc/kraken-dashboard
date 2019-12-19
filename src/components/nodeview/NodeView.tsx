@@ -11,6 +11,8 @@ interface NodeViewProps {
   disconnected: boolean
   cfgNode: Node | undefined
   dscNode: Node | undefined
+  cfgUrlSingle: string
+  dscUrlSingle: string
   opened: () => void
   graph: Graph | undefined
   colorInfo: NodeColorInfo
@@ -52,7 +54,13 @@ export class NodeView extends Component<NodeViewProps, NodeViewState> {
             <div className={`node-view`}>
               <Square dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} colorInfo={this.props.colorInfo} />
               <NodeDetails dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} />
-              <Actions dscNode={this.props.dscNode} cfgNode={this.props.cfgNode} graphToggle={this.graphToggle} />
+              <Actions
+                dscNode={this.props.dscNode}
+                cfgNode={this.props.cfgNode}
+                dscUrlSingle={this.props.dscUrlSingle}
+                cfgUrlSingle={this.props.cfgUrlSingle}
+                graphToggle={this.graphToggle}
+              />
             </div>
             {this.props.graph !== undefined && Object.keys(this.props.graph).length !== 0 && (
               <NodeGraph graph={this.props.graph} graphOpen={this.state.graphOpen} graphToggle={this.graphToggle} />

@@ -6,16 +6,16 @@ export const REFRESH = 0.4
 // Should websocket be turned on by default?
 export const WEBSOCKET = true
 
-export const dscUrl: string = `http://${KRAKEN_IP}/dsc/nodes`
-export const cfgUrl: string = `http://${KRAKEN_IP}/cfg/nodes`
-export const dscUrlSingle: string = `http://${KRAKEN_IP}/dsc/node`
-export const cfgUrlSingle: string = `http://${KRAKEN_IP}/cfg/node`
-export const graphUrl: string = `http://${KRAKEN_IP}/graph/json`
-export const webSocketUrl: string = `http://${KRAKEN_IP}/ws`
-export const stateOptionsUrl: string = `http://${KRAKEN_IP}/enumerables`
+export const dscUrl: string = `/dsc/nodes`
+export const cfgUrl: string = `/cfg/nodes`
+export const dscUrlSingle: string = `/dsc/node`
+export const cfgUrlSingle: string = `/cfg/node`
+export const graphUrl: string = `/graph/json`
+export const webSocketUrl: string = `/ws`
+export const stateOptionsUrl: string = `/enumerables`
 
 export const graphUrlSingle = (uuid: string): string => {
-  return `http://${KRAKEN_IP}/graph/node/${uuid}/json`
+  return `/graph/node/${uuid}/json`
 }
 
 export const COLORS = {

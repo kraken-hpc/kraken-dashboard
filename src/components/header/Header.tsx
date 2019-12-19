@@ -17,6 +17,8 @@ interface HeaderProps {
   handleRefreshChange: (refreshRate: number) => void
   useWebSocket: boolean
   handleWebsocketChange: (websocket: boolean) => void
+  krakenIP: string
+  handleIpChange: (ip: string) => void
 }
 
 export function Header(props: HeaderProps) {
@@ -30,6 +32,8 @@ export function Header(props: HeaderProps) {
         handleRefreshChange={props.handleRefreshChange}
         useWebSocket={props.useWebSocket}
         handleWebsocketChange={props.handleWebsocketChange}
+        krakenIP={props.krakenIP}
+        handleIpChange={props.handleIpChange}
       />
     </div>
   )
@@ -40,6 +44,8 @@ interface SettingsAreaProps {
   handleRefreshChange: (refreshRate: number) => void
   useWebSocket: boolean
   handleWebsocketChange: (websocket: boolean) => void
+  krakenIP: string
+  handleIpChange: (ip: string) => void
 }
 
 interface SettingsAreaState {
@@ -94,6 +100,8 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
           useWebSocket={this.props.useWebSocket}
           handleWebsocketChange={this.props.handleWebsocketChange}
           closeMenu={this.closeMenu}
+          krakenIP={this.props.krakenIP}
+          handleIpChange={this.props.handleIpChange}
         />
       </React.Fragment>
     )
@@ -108,12 +116,15 @@ interface SettingsModalProps {
   handleWebsocketChange: (websocket: boolean) => void
   closeMenu: () => void
   buttonRef: SVGSVGElement | null
+  krakenIP: string
+  handleIpChange: (ip: string) => void
 }
 
 interface SettingsModalState {
   openTop: string
   closedTop: string
   style: CSS.Properties
+  ip: string
 }
 
 class SettingsModal extends React.Component<SettingsModalProps, SettingsModalState> {
@@ -132,6 +143,7 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
         visibility: this.props.menuOpen ? 'visible' : 'hidden',
         top: this.props.menuOpen ? openTop : closedTop,
       },
+      ip: this.props.krakenIP,
     }
   }
 
@@ -163,6 +175,30 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
   render() {
     return (
       <form className={`settings`} id={`settings-modal`} style={this.state.style} ref={node => (this.modalRef = node)}>
+        <div className={`settings-row`}>
+          <label>Kraken IP:</label>
+          <input
+            className={`ip-field`}
+            name='krakenIP'
+            type='text'
+            value={this.state.ip}
+            onChange={event => {
+              this.setState({
+                ip: event.target.value,
+              })
+            }}
+          />
+          <button
+            id={`ip-apply-button`}
+            className={`button`}
+            disabled={this.props.krakenIP === this.state.ip ? true : false}
+            onClick={() => {
+              this.props.handleIpChange(this.state.ip)
+              this.props.closeMenu()
+            }}>
+            Apply
+          </button>
+        </div>
         <div className={`settings-row`}>
           <label>Reconnect Rate:</label>
           <input
