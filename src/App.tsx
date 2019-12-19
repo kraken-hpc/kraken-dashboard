@@ -7,7 +7,19 @@ import './components/settings/styles/nodecolor.css'
 import './components/settings/styles/dropdown.css'
 
 import React, { Component } from 'react'
-import { REFRESH, WEBSOCKET, dscUrl, webSocketUrl, cfgUrl, graphUrlSingle, defaultNodeColorInfo } from './config'
+import {
+  REFRESH,
+  WEBSOCKET,
+  defaultNodeColorInfo,
+  KRAKEN_IP,
+  dscUrl,
+  cfgUrl,
+  webSocketUrl,
+  graphUrlSingle,
+  cfgUrlSingle,
+  dscUrlSingle,
+  stateOptionsUrl,
+} from './config'
 import { HashRouter, Route } from 'react-router-dom'
 import { Header } from './components/header/Header'
 import { Dashboard } from './components/dashboard/Dashboard'
@@ -44,6 +56,7 @@ interface AppProps {}
 interface AppState {
   refreshRate: number
   useWebSocket: boolean
+  krakenIP: string
   liveConnectionActive: LiveConnectionType
   masterNode: Node
   nodes: Map<string, Node>
@@ -64,9 +77,16 @@ class App extends Component<AppProps, AppState> {
 
   constructor(props: AppProps) {
     super(props)
+
+    let ip = localStorage.getItem('kraken-ip')
+    if (ip === null) {
+      ip = KRAKEN_IP
+    }
+
     this.state = {
       refreshRate: REFRESH,
       useWebSocket: WEBSOCKET,
+      krakenIP: ip,
       masterNode: {},
       nodes: new Map(),
       cfgNodes: new Map(),
@@ -78,6 +98,10 @@ class App extends Component<AppProps, AppState> {
       graph: undefined,
       colorInfo: defaultNodeColorInfo,
     }
+  }
+
+  getUrl = (path: string): string => {
+    return 'http://' + this.state.krakenIP + path
   }
 
   componentDidMount = () => {
@@ -111,6 +135,30 @@ class App extends Component<AppProps, AppState> {
           this.startReconnect()
           break
       }
+    }
+
+    // If ip has changed, delete everything and restart
+    if (this.state.krakenIP !== prevState.krakenIP) {
+      localStorage.setItem('kraken-ip', this.state.krakenIP)
+      this.setState(
+        {
+          refreshRate: REFRESH,
+          useWebSocket: WEBSOCKET,
+          krakenIP: this.state.krakenIP,
+          masterNode: {},
+          nodes: new Map(),
+          cfgNodes: new Map(),
+          cfgMaster: {},
+          dscNodes: new Map(),
+          dscMaster: {},
+          liveConnectionActive: 'REFETCH',
+          updatingGraph: undefined,
+          graph: undefined,
+          colorInfo: defaultNodeColorInfo,
+        },
+        this.refetch
+      )
+      return
     }
 
     if (prevState.liveConnectionActive !== this.state.liveConnectionActive) {
@@ -159,6 +207,14 @@ class App extends Component<AppProps, AppState> {
     })
   }
 
+  handleIpChange = (ip: string) => {
+    if (this.validateIPaddress(ip)) {
+      this.setState({
+        krakenIP: ip,
+      })
+    }
+  }
+
   stopPolling = () => {
     if (this.pollingTimeout !== undefined) {
       clearInterval(this.pollingTimeout)
@@ -180,7 +236,7 @@ class App extends Component<AppProps, AppState> {
   // If any error happens, liveconnection gets changed to reconnect or refetch
   pollingFunction = () => {
     if (this.state.cfgMaster.id !== undefined) {
-      dscNodeFetch(dscUrl, this.state.cfgMaster.id).then(dscNodes => {
+      dscNodeFetch(this.getUrl(dscUrl), this.state.cfgMaster.id).then(dscNodes => {
         if (dscNodes.masterNode !== null && dscNodes.computeNodes !== null) {
           const valErr = this.validateNodes(
             this.state.cfgMaster,
@@ -236,7 +292,7 @@ class App extends Component<AppProps, AppState> {
       console.warn('Websocket already connected, refusing to create another')
       return
     }
-    fetchJsonFromUrl(webSocketUrl)
+    fetchJsonFromUrl(this.getUrl(webSocketUrl))
       .then(json => {
         const wsurl = `ws://${json.host}:${json.port}${json.url}`
         this.websocket = new WebSocket(wsurl)
@@ -506,7 +562,7 @@ class App extends Component<AppProps, AppState> {
   // It pulls the cfg node state
   // If it eventually gets the cfg nodes it will refetch and activate either the websocket or polling
   reconnectFunction = () => {
-    cfgNodeFetch(cfgUrl).then(cfgNodes => {
+    cfgNodeFetch(this.getUrl(cfgUrl)).then(cfgNodes => {
       if (cfgNodes.masterNode !== null && cfgNodes.computeNodes !== null && cfgNodes.masterNode.id !== undefined) {
         this.setState({
           liveConnectionActive: 'REFETCH',
@@ -518,7 +574,7 @@ class App extends Component<AppProps, AppState> {
   refetch = () => {
     console.log('Refetching')
     // Get cfg and dsc nodes
-    allNodeFetch(cfgUrl, dscUrl).then(allNodes => {
+    allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl)).then(allNodes => {
       if (
         allNodes.cfgMasterNode !== null &&
         allNodes.cfgComputeNodes !== null &&
@@ -550,7 +606,7 @@ class App extends Component<AppProps, AppState> {
       }
     })
     // Get state enums
-    getStateData().then(nodeStateOptions => {
+    getStateData(this.getUrl(stateOptionsUrl)).then(nodeStateOptions => {
       if (nodeStateOptions !== null) {
         this.setState(
           {
@@ -563,7 +619,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   getGraph = (uuid: string) => {
-    fetchJsonFromUrl(graphUrlSingle(base64ToUuid(uuid))).then(graph => {
+    fetchJsonFromUrl(this.getUrl(graphUrlSingle(base64ToUuid(uuid)))).then(graph => {
       if (graph === null) {
         this.setState({
           liveConnectionActive: 'RECONNECT',
@@ -633,6 +689,18 @@ class App extends Component<AppProps, AppState> {
     }
   }
 
+  validateIPaddress = (ip: string): boolean => {
+    if (
+      /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]):[0-9]+$/.test(
+        ip
+      )
+    ) {
+      return true
+    }
+    alert('You have entered an invalid IP address and port!')
+    return false
+  }
+
   render() {
     return (
       <HashRouter>
@@ -641,6 +709,8 @@ class App extends Component<AppProps, AppState> {
           handleRefreshChange={this.handleRefreshChange}
           useWebSocket={this.state.useWebSocket}
           handleWebsocketChange={this.handleWebsocketChange}
+          krakenIP={this.state.krakenIP}
+          handleIpChange={this.handleIpChange}
         />
         <React.Fragment>
           <Route
@@ -676,6 +746,8 @@ class App extends Component<AppProps, AppState> {
                     ? this.state.dscMaster
                     : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))
                 }
+                cfgUrlSingle={this.getUrl(cfgUrlSingle)}
+                dscUrlSingle={this.getUrl(dscUrlSingle)}
                 opened={() => {
                   if (uuidToBase64(props.match.params.uuid) !== this.state.masterNode.id) {
                     this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))

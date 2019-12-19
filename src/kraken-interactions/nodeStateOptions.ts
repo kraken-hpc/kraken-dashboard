@@ -1,5 +1,4 @@
 import { fetchJsonFromUrl } from './fetch'
-import { stateOptionsUrl } from '../config'
 import { getStateUrlLevels, stripProtoUrl } from './node'
 
 export interface NodeStateCategory {
@@ -8,7 +7,7 @@ export interface NodeStateCategory {
   url: string
 }
 
-export const getStateData = async (): Promise<NodeStateCategory[] | null> => {
+export const getStateData = async (stateOptionsUrl: string): Promise<NodeStateCategory[] | null> => {
   const stateData = await fetchJsonFromUrl(stateOptionsUrl).catch(error => {
     return null
   })

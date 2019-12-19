@@ -4,6 +4,8 @@ import React from 'react'
 interface ActionProps {
   cfgNode: Node
   dscNode: Node
+  cfgUrlSingle: string
+  dscUrlSingle: string
   graphToggle: () => void
 }
 
@@ -13,14 +15,14 @@ export const Actions = (props: ActionProps) => {
       <div
         className={`button green`}
         onClick={() => {
-          powerOnNode(props.cfgNode)
+          powerOnNode(props.cfgNode, props.cfgUrlSingle)
         }}>
         Power On
       </div>
       <div
         className={`button red`}
         onClick={() => {
-          powerOffNode(props.cfgNode, props.dscNode)
+          powerOffNode(props.cfgNode, props.dscNode, props.cfgUrlSingle, props.dscUrlSingle)
         }}>
         Power Off
       </div>
