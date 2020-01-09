@@ -151,10 +151,11 @@
 
 #color-settings-button {
   margin: 0 15px 5px 15px;
-  padding: 5px;
+  padding-top: 5px;
+  padding-bottom: 3px;
   font-size: 1rem;
   font-weight: bold;
-  color: var(--dark-grey)
+  color: var(--dark-grey);
 }
 
 #ip-apply-button{
@@ -162,8 +163,10 @@
   display: inline-block;
   margin: 0 0 4px 0;
   font-size: 1rem;
-  padding: 1px 20px;
+  padding: 2px 20px 1px 20px;
   top:0;
+  color: var(--dark-grey);
+  font-weight: bold;
 }
 
 .ip-field{

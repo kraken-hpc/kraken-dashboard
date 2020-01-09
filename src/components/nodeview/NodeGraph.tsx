@@ -5,7 +5,6 @@ import { COLORS } from '../../config'
 import CSS from 'csstype'
 
 interface NodeGraphProps {
-  graphOpen: boolean
   graphToggle: () => void
   graph: Graph
 }
@@ -13,7 +12,6 @@ interface NodeGraphProps {
 interface NodeGraphState {
   data: any
   options: any
-  style: CSS.Properties
 }
 
 export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
@@ -67,10 +65,6 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
     this.state = {
       data: data,
       options: options,
-      style: {
-        opacity: this.props.graphOpen ? 100 : 0,
-        visibility: this.props.graphOpen ? 'visible' : 'hidden',
-      },
     }
   }
 
@@ -82,15 +76,6 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
   }
 
   componentDidUpdate(prevProps: NodeGraphProps) {
-    if (this.props.graphOpen !== prevProps.graphOpen) {
-      this.setState({
-        style: {
-          opacity: this.props.graphOpen ? 100 : 0,
-          visibility: this.props.graphOpen ? 'visible' : 'hidden',
-        },
-      })
-    }
-
     if (this.props.graph !== prevProps.graph) {
       const data = this.state.data
       const nodes = this.props.graph.nodes
@@ -113,7 +98,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
 
   render() {
     return (
-      <div style={this.state.style} className={`graph-area`}>
+      <div className={`graph-area`}>
         <div
           className='close-button'
           onClick={() => {
