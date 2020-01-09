@@ -1,4 +1,4 @@
-.node-graph{
+.node-graph {
   display: block;
   width: auto;
   height: 100%;
@@ -6,7 +6,7 @@
   border-radius: 8px;
 }
 
-.graph-area{
+.graph-area {
   transition: all 0.1s ease-out;
   position: fixed;
   left: 2rem;
@@ -21,7 +21,7 @@
   border-radius: 10px;
 }
 
-.close-button{
+.close-button {
   z-index: 101;
   position: absolute;
   top: -16px;
@@ -33,4 +33,10 @@
   border: medium solid var(--border-grey);
   border-radius: 50px;
   cursor: pointer;
+}
+
+.graph-settings {
+  position: absolute;
+  top: 0;
+  right: 0;
 }

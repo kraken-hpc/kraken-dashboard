@@ -62,8 +62,8 @@ export class NodeView extends Component<NodeViewProps, NodeViewState> {
                 graphToggle={this.graphToggle}
               />
             </div>
-            {this.props.graph !== undefined && Object.keys(this.props.graph).length !== 0 && (
-              <NodeGraph graph={this.props.graph} graphOpen={this.state.graphOpen} graphToggle={this.graphToggle} />
+            {this.props.graph !== undefined && Object.keys(this.props.graph).length !== 0 && this.state.graphOpen && (
+              <NodeGraph graph={this.props.graph} graphToggle={this.graphToggle} />
             )}
           </React.Fragment>
         )}
