@@ -11,16 +11,18 @@ interface NodeGraphProps {
 
 interface NodeGraphState {
   data: any
-  options: any
+  settingsMenu: boolean
 }
 
 export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
   appRef: RefObject<any> | undefined = undefined
+  configRef: RefObject<any> | undefined = undefined
 
   constructor(props: NodeGraphProps) {
     super(props)
 
     this.appRef = createRef()
+    this.configRef = createRef()
 
     const nodes = props.graph.nodes
 
@@ -39,39 +41,53 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       edges: new vis.DataSet(props.graph.edges),
     }
 
-    const options = {
-      edges: {
-        arrows: {
-          to: {
-            enabled: true,
-            scaleFactor: 1.5,
-          },
-        },
-        color: {
-          inherit: false,
-        },
-        width: 4,
-      },
-      physics: {
-        enabled: true,
-        barnesHut: {
-          gravitationalConstant: -50000,
-        },
-      },
-      height: '100%',
-      width: '100%',
-    }
-
     this.state = {
       data: data,
-      options: options,
+      settingsMenu: false,
     }
   }
 
   componentDidMount() {
-    if (this.appRef !== undefined) {
-      const network = new vis.Network(this.appRef.current, this.state.data, this.state.options)
-      network.fit(this.state.options)
+    if (this.appRef !== undefined && this.configRef !== undefined) {
+      const options: any = {
+        edges: {
+          arrows: {
+            to: {
+              enabled: true,
+              scaleFactor: 1.5,
+            },
+          },
+          color: {
+            inherit: false,
+          },
+          width: 4,
+        },
+        physics: {
+          enabled: true,
+          barnesHut: {
+            gravitationalConstant: -50000,
+          },
+        },
+        height: '100%',
+        width: '100%',
+        configure: {
+          filter: (option: any, path: any) => {
+            if (path.indexOf('physics') !== -1) {
+              return true
+            }
+            if (path.indexOf('smooth') !== -1 || option === 'smooth') {
+              return true
+            }
+            return false
+          },
+          container: this.configRef.current,
+        },
+      }
+
+      const network = new vis.Network(this.appRef.current, this.state.data, options)
+      network.fit(options)
+    } else {
+      console.log('graph: ', this.appRef, 'config: ', this.configRef)
     }
   }
 
@@ -96,6 +112,12 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
     }
   }
 
+  toggleSettings = () => {
+    this.setState({
+      settingsMenu: !this.state.settingsMenu,
+    })
+  }
+
   render() {
     return (
       <div className={`graph-area`}>
@@ -112,9 +134,15 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
             />
           </svg>
         </div>
+        <button style={{ position: 'absolute', top: 5, zIndex: 10, left: 25 }} onClick={this.toggleSettings}>
+          settings
+        </button>
         <div className={`node-graph`} ref={this.appRef} />
-        {/* <div
-          ref={this.configRef} /> */}
+        <div
+          style={this.state.settingsMenu ? { display: 'block' } : { display: 'none' }}
+          className={`graph-settings`}
+          ref={this.configRef}
+        />
       </div>
     )
   }
