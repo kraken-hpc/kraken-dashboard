@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css?family=Lobster");
+@import url('https://fonts.googleapis.com/css?family=Lobster');
 
 .header {
   width: 100%;
@@ -13,7 +13,7 @@
 .header-text {
   font-size: 4rem;
   color: var(--title-red);
-  font-family: "Lobster";
+  font-family: 'Lobster';
   font-weight: bold;
   background-color: var(--title-yellow);
   cursor: pointer;
@@ -134,7 +134,7 @@
   position: relative;
 }
 #slider-output::before {
-  content: "";
+  content: '';
   position: absolute;
   left: -12px;
   top: 50%;
@@ -158,18 +158,19 @@
   color: var(--dark-grey);
 }
 
-#ip-apply-button{
+#ip-apply-button {
   position: absolute;
   display: inline-block;
   margin: 0 0 4px 0;
   font-size: 1rem;
   padding: 2px 20px 1px 20px;
-  top:0;
+  top: 0;
   color: var(--dark-grey);
   font-weight: bold;
+  border: 0;
 }
 
-.ip-field{
+.ip-field {
   margin: 0 10px;
   font-size: 1rem;
   padding: 2px 5px;

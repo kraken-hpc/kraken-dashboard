@@ -2,7 +2,7 @@ import React, { Component, createRef, RefObject } from 'react'
 import vis from 'vis-network'
 import { Graph } from '../../kraken-interactions/graph'
 import { COLORS } from '../../config'
-import CSS from 'csstype'
+import { NodeColor } from '../../kraken-interactions/graph'
 
 interface NodeGraphProps {
   graphToggle: () => void
@@ -28,11 +28,15 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
 
     // Add highlight color to nodes
     for (let i = 0; i < nodes.length; i++) {
-      const highlight = {
-        border: nodes[i].color.border,
-        background: nodes[i].color.background,
+      if (nodes[i].color !== undefined) {
+        const color = nodes[i].color as NodeColor
+        const highlight = {
+          border: color.border,
+          background: color.background,
+        }
+        color.highlight = highlight
+        nodes[i].color = color
       }
-      nodes[i].color.highlight = highlight
       nodes[i].borderWidth = 2
     }
 
@@ -98,11 +102,15 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
 
       // Add highlight color to nodes
       for (let i = 0; i < nodes.length; i++) {
-        const highlight = {
-          border: nodes[i].color.border,
-          background: nodes[i].color.background,
+        if (nodes[i].color !== undefined) {
+          const color = nodes[i].color as NodeColor
+          const highlight = {
+            border: color.border,
+            background: color.background,
+          }
+          color.highlight = highlight
+          nodes[i].color = color
         }
-        nodes[i].color.highlight = highlight
         nodes[i].borderWidth = 2
       }
 

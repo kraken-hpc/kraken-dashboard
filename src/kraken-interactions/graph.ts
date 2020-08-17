@@ -7,10 +7,10 @@ interface Node {
   id: string
   label: string
   borderWidth: number
-  color: NodeColor
+  color?: NodeColor
 }
 
-interface NodeColor extends Highlight {
+export interface NodeColor extends Highlight {
   highlight: Highlight
 }
 
@@ -23,7 +23,7 @@ interface Edge {
   id: string
   to: string
   from: string
-  color: EdgeColor
+  color?: EdgeColor
 }
 
 interface EdgeColor {
