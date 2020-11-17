@@ -50,6 +50,8 @@ import {
   NodeColorInfoArea,
 } from './components/settings/NodeColor'
 import { getStateData, NodeStateCategory } from './kraken-interactions/nodeStateOptions'
+import GraphViewer from './components/graph-viewer/GraphViewer'
+import AutoSizer from 'react-virtualized-auto-sizer'
 
 interface AppProps {}
 
@@ -704,72 +706,81 @@ class App extends Component<AppProps, AppState> {
   render() {
     return (
       <HashRouter>
-        <Header
-          refreshRate={this.state.refreshRate}
-          handleRefreshChange={this.handleRefreshChange}
-          useWebSocket={this.state.useWebSocket}
-          handleWebsocketChange={this.handleWebsocketChange}
-          krakenIP={this.state.krakenIP}
-          handleIpChange={this.handleIpChange}
-        />
-        <React.Fragment>
-          <Route
-            onchange={() => {
-              console.log('route got clicked!')
-            }}
-            exact
-            path='/'
-            render={() => (
-              <Dashboard
-                disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
-                cfgMasterNode={this.state.cfgMaster}
-                dscMasterNode={this.state.dscMaster}
-                cfgNodes={this.state.cfgNodes}
-                dscNodes={this.state.dscNodes}
-                opened={this.stopUpdatingGraph}
-                colorInfo={this.state.colorInfo}
-              />
-            )}
+        <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <Header
+            refreshRate={this.state.refreshRate}
+            handleRefreshChange={this.handleRefreshChange}
+            useWebSocket={this.state.useWebSocket}
+            handleWebsocketChange={this.handleWebsocketChange}
+            krakenIP={this.state.krakenIP}
+            handleIpChange={this.handleIpChange}
           />
-          <Route
-            path='/node/:uuid'
-            render={props => (
-              <NodeView
-                disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
-                cfgNode={
-                  this.state.cfgMaster.id === uuidToBase64(props.match.params.uuid)
-                    ? this.state.cfgMaster
-                    : this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))
-                }
-                dscNode={
-                  this.state.dscMaster.id === uuidToBase64(props.match.params.uuid)
-                    ? this.state.dscMaster
-                    : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))
-                }
-                cfgUrlSingle={this.getUrl(cfgUrlSingle)}
-                dscUrlSingle={this.getUrl(dscUrlSingle)}
-                opened={() => {
-                  if (uuidToBase64(props.match.params.uuid) !== this.state.masterNode.id) {
-                    this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))
-                  }
-                }}
-                graph={this.state.graph}
-                colorInfo={this.state.colorInfo}
-              />
-            )}
-          />
-          <Route
-            exact
-            path='/settings'
-            render={() => (
-              <NodeColor
-                nodeStateOptions={this.state.nodeStateOptions}
-                currentColorConfig={this.state.colorInfo}
-                changeColorInfo={this.changeColorInfo}
-              />
-            )}
-          />
-        </React.Fragment>
+          <div style={{ flexGrow: 1 }}>
+            <AutoSizer>
+              {({ height, width }) => (
+                <div style={{ width: width, height: height }}>
+                  <Route
+                    onchange={() => {
+                      console.log('route got clicked!')
+                    }}
+                    exact
+                    path='/'
+                    render={() => (
+                      <Dashboard
+                        disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
+                        cfgMasterNode={this.state.cfgMaster}
+                        dscMasterNode={this.state.dscMaster}
+                        cfgNodes={this.state.cfgNodes}
+                        dscNodes={this.state.dscNodes}
+                        opened={this.stopUpdatingGraph}
+                        colorInfo={this.state.colorInfo}
+                      />
+                    )}
+                  />
+                  <Route
+                    path='/node/:uuid'
+                    render={props => (
+                      <NodeView
+                        disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
+                        cfgNode={
+                          this.state.cfgMaster.id === uuidToBase64(props.match.params.uuid)
+                            ? this.state.cfgMaster
+                            : this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))
+                        }
+                        dscNode={
+                          this.state.dscMaster.id === uuidToBase64(props.match.params.uuid)
+                            ? this.state.dscMaster
+                            : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))
+                        }
+                        cfgUrlSingle={this.getUrl(cfgUrlSingle)}
+                        dscUrlSingle={this.getUrl(dscUrlSingle)}
+                        opened={() => {
+                          if (uuidToBase64(props.match.params.uuid) !== this.state.masterNode.id) {
+                            this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))
+                          }
+                        }}
+                        graph={this.state.graph}
+                        colorInfo={this.state.colorInfo}
+                      />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path='/settings'
+                    render={() => (
+                      <NodeColor
+                        nodeStateOptions={this.state.nodeStateOptions}
+                        currentColorConfig={this.state.colorInfo}
+                        changeColorInfo={this.changeColorInfo}
+                      />
+                    )}
+                  />
+                  <Route exact path='/graph_viewer' render={() => <GraphViewer />} />
+                </div>
+              )}
+            </AutoSizer>
+          </div>
+        </div>
       </HashRouter>
     )
   }
