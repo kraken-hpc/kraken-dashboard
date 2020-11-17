@@ -227,10 +227,15 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
             }}
           />
         </div>
-        <div className={`settings-row`}>
+        <div className={`settings-row`} style={{ display: 'flex', justifyContent: 'space-evenly' }}>
           <Link to={`/settings`} style={{ textDecoration: 'none' }}>
             <div onClick={this.props.closeMenu} id={`color-settings-button`} className={`button`}>
               Color Settings
+            </div>
+          </Link>
+          <Link to={`/graph_viewer`} style={{ textDecoration: 'none' }}>
+            <div onClick={this.props.closeMenu} id={`color-settings-button`} className={`button`}>
+              Graph Viewer
             </div>
           </Link>
         </div>

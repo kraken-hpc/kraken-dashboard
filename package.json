@@ -45,6 +45,7 @@
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.4.3",
     "react-tabs": "^3.0.0",
+    "react-virtualized-auto-sizer": "^1.0.2",
     "typescript": "3.7.3",
     "vis-network": "^6.1.1"
   },
@@ -57,6 +58,7 @@
     "@types/react-dom": "16.9.4",
     "@types/react-router-dom": "^5.1.0",
     "@types/react-tabs": "^2.3.1",
+    "@types/react-virtualized-auto-sizer": "^1.0.0",
     "concurrently": "^5.0.1",
     "electron": "^7.1.4",
     "electron-builder": "^21.2.0",
