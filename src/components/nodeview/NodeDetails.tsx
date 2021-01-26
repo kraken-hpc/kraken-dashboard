@@ -1,5 +1,5 @@
 import React from 'react'
-import { Node, base64ToUuid, stripProtoUrl, base64Convert, mergeDSCandCFG } from '../../kraken-interactions/node'
+import { Node, stripProtoUrl, mergeDSCandCFG } from '../../kraken-interactions/node'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import './styles/react-tabs.css'
 
@@ -15,12 +15,12 @@ export const NodeDetails = (props: NodeDetailsProps) => {
   const dscPhysState = props.dscNode.physState !== undefined ? props.dscNode.physState : ''
   const cfgPhysState = props.cfgNode.physState !== undefined ? props.cfgNode.physState : ''
 
-  const uuid = base64ToUuid(props.cfgNode.id)
+  const uuid = props.cfgNode.id
 
   let parentUuid = ''
 
   if (props.cfgNode.parentId !== null && props.cfgNode.parentId !== undefined) {
-    parentUuid = base64ToUuid(props.cfgNode.parentId)
+    parentUuid = props.cfgNode.parentId
   } else {
     props.cfgNode.nodename = 'Master'
   }
@@ -155,10 +155,8 @@ const RecursiveValues = (object: any, key: string | number, depth: number): any[
     for (const key of Object.keys(object)) {
       returnVal.push(RecursiveValues(object[key], key, depth))
     }
-  } else if (object === Boolean) {
-    returnVal.push(NodeDetailsRow(key, depth, object.toString()))
   } else {
-    returnVal.push(NodeDetailsRow(key, depth, base64Convert(key.toString(), object.toString())))
+    returnVal.push(NodeDetailsRow(key, depth, object.toString()))
   }
 
   return returnVal

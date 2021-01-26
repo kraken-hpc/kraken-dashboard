@@ -1,8 +1,7 @@
 import React, { Component, createRef, RefObject } from 'react'
-import vis from 'vis-network'
+import vis, { Network } from 'vis-network'
 import { Graph } from '../../kraken-interactions/graph'
 import { COLORS } from '../../config'
-import { NodeColor } from '../../kraken-interactions/graph'
 
 interface NodeGraphProps {
   graphToggle: () => void
@@ -29,7 +28,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
     // Add highlight color to nodes
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].color !== undefined) {
-        const color = nodes[i].color as NodeColor
+        const color = nodes[i].color as vis.Color
         const highlight = {
           border: color.border,
           background: color.background,
@@ -40,9 +39,9 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       nodes[i].borderWidth = 2
     }
 
-    const data = {
-      nodes: new vis.DataSet(nodes),
-      edges: new vis.DataSet(props.graph.edges),
+    const data: vis.Data = {
+      nodes: nodes,
+      edges: this.props.graph.edges,
     }
 
     this.state = {
@@ -88,7 +87,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
         },
       }
 
-      const network = new vis.Network(this.appRef.current, this.state.data, options)
+      const network = new Network(this.appRef.current, this.state.data, options)
       network.fit(options)
     } else {
       console.log('graph: ', this.appRef, 'config: ', this.configRef)
@@ -103,7 +102,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       // Add highlight color to nodes
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].color !== undefined) {
-          const color = nodes[i].color as NodeColor
+          const color = nodes[i].color as vis.Color
           const highlight = {
             border: color.border,
             background: color.background,

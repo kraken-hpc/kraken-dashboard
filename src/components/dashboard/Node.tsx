@@ -1,4 +1,4 @@
-import { Node as NodeInterface, base64ToUuid, getColorsForArea } from '../../kraken-interactions/node'
+import { Node as NodeInterface, getColorsForArea } from '../../kraken-interactions/node'
 import { Link } from 'react-router-dom'
 import React from 'react'
 import { NodeColorInfo, NodeArea } from '../settings/NodeColor'
@@ -18,7 +18,7 @@ export const Node = (props: NodeProps) => {
   }
 
   const name = props.cfg.nodename
-  const uuid = base64ToUuid(props.cfg.id)
+  const uuid = props.cfg.id
 
   const colorMap: Map<NodeArea, string> = getColorsForArea(props.cfg, props.dsc, props.colorInfo)
 
