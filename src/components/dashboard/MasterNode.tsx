@@ -1,11 +1,11 @@
 import { NodeProps } from './Node'
-import { stateToColor, base64ToUuid } from '../../kraken-interactions/node'
+import { stateToColor } from '../../kraken-interactions/node'
 import { Link } from 'react-router-dom'
 import React from 'react'
 
 export const MasterNode = (props: NodeProps) => {
   const physColor = stateToColor(props.dsc.physState)
-  const uuid = base64ToUuid(props.dsc.id)
+  const uuid = props.dsc.id
 
   return (
     <Link

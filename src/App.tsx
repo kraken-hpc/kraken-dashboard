@@ -26,10 +26,8 @@ import { Dashboard } from './components/dashboard/Dashboard'
 import {
   Node,
   dscNodeFetch,
-  uuidToBase64,
   nodeSort,
   cfgNodeFetch,
-  base64ToUuid,
   allNodeFetch,
   mergeDSCandCFG,
   updateFromWsMessage,
@@ -361,9 +359,8 @@ class App extends Component<AppProps, AppState> {
           const jsonMessage: WsMessage = jsonData[i]
           // This is a physstate or runstate update
           if (jsonMessage.url === '/PhysState' || jsonMessage.url === '/RunState') {
-            const base64Id = uuidToBase64(jsonMessage.nodeid)
-            const newNode = newNodes.get(base64Id)
-            const newDscNode = newDscNodes.get(base64Id)
+            const newNode = newNodes.get(jsonMessage.nodeid)
+            const newDscNode = newDscNodes.get(jsonMessage.nodeid)
             if (newNode === undefined || newDscNode === undefined) {
               console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
               this.setState({
@@ -410,9 +407,8 @@ class App extends Component<AppProps, AppState> {
             dscUpdateHappened = true
           } else if (jsonMessage.url.includes('type.googleapis.com')) {
             // This is an extensions update
-            const base64Id = uuidToBase64(jsonMessage.nodeid)
-            let newNode = newNodes.get(base64Id)
-            let newDscNode = newDscNodes.get(base64Id)
+            let newNode = newNodes.get(jsonMessage.nodeid)
+            let newDscNode = newDscNodes.get(jsonMessage.nodeid)
             if (newNode === undefined || newDscNode === undefined) {
               console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
               this.setState({
@@ -435,7 +431,7 @@ class App extends Component<AppProps, AppState> {
       } else if (
         this.state.updatingGraph !== undefined &&
         (jsonData[i].type === 2 || jsonData[i].type === 5) &&
-        jsonData[i].nodeid === base64ToUuid(this.state.updatingGraph).toLowerCase()
+        jsonData[i].nodeid === this.state.updatingGraph.toLowerCase()
       ) {
         this.getGraph(this.state.updatingGraph)
       }
@@ -621,7 +617,7 @@ class App extends Component<AppProps, AppState> {
   }
 
   getGraph = (uuid: string) => {
-    fetchJsonFromUrl(this.getUrl(graphUrlSingle(base64ToUuid(uuid)))).then(graph => {
+    fetchJsonFromUrl(this.getUrl(graphUrlSingle(uuid))).then(graph => {
       if (graph === null) {
         this.setState({
           liveConnectionActive: 'RECONNECT',
@@ -743,20 +739,20 @@ class App extends Component<AppProps, AppState> {
                       <NodeView
                         disconnected={this.state.liveConnectionActive === 'RECONNECT' ? true : false}
                         cfgNode={
-                          this.state.cfgMaster.id === uuidToBase64(props.match.params.uuid)
+                          this.state.cfgMaster.id === props.match.params.uuid
                             ? this.state.cfgMaster
-                            : this.state.cfgNodes.get(uuidToBase64(props.match.params.uuid))
+                            : this.state.cfgNodes.get(props.match.params.uuid)
                         }
                         dscNode={
-                          this.state.dscMaster.id === uuidToBase64(props.match.params.uuid)
+                          this.state.dscMaster.id === props.match.params.uuid
                             ? this.state.dscMaster
-                            : this.state.dscNodes.get(uuidToBase64(props.match.params.uuid))
+                            : this.state.dscNodes.get(props.match.params.uuid)
                         }
                         cfgUrlSingle={this.getUrl(cfgUrlSingle)}
                         dscUrlSingle={this.getUrl(dscUrlSingle)}
                         opened={() => {
-                          if (uuidToBase64(props.match.params.uuid) !== this.state.masterNode.id) {
-                            this.startUpdatingGraph(uuidToBase64(props.match.params.uuid))
+                          if (props.match.params.uuid !== this.state.masterNode.id) {
+                            this.startUpdatingGraph(props.match.params.uuid)
                           }
                         }}
                         graph={this.state.graph}

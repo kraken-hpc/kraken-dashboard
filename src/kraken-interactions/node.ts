@@ -339,7 +339,7 @@ export const getColorsForArea = (cfg: Node, dsc: Node, colorInfo: NodeColorInfo 
 
 export const updateFromWsMessage = (node: Node, jsonMessage: WsMessage): Node | undefined => {
   if (node.id !== undefined) {
-    if (uuidToBase64(jsonMessage.nodeid) !== node.id) {
+    if (jsonMessage.nodeid !== node.id) {
       console.error('node id does not match', jsonMessage.nodeid.toUpperCase(), node.id.toUpperCase())
       return undefined
     }
@@ -407,81 +407,81 @@ const setValueFromUrl = (url: string, node: Node, value: any): Node | undefined 
 }
 
 // Takes in a base64 number and converts it to hex
-const base64toHEX = (base64: string): string => {
-  const raw = atob(base64)
-  let HEX = ''
-  for (let i = 0; i < raw.length; i++) {
-    const _hex = raw.charCodeAt(i).toString(16)
-    HEX += _hex.length === 2 ? _hex : '0' + _hex
-  }
-  return HEX.toUpperCase()
-}
+// const base64toHEX = (base64: string): string => {
+//   const raw = atob(base64)
+//   let HEX = ''
+//   for (let i = 0; i < raw.length; i++) {
+//     const _hex = raw.charCodeAt(i).toString(16)
+//     HEX += _hex.length === 2 ? _hex : '0' + _hex
+//   }
+//   return HEX.toUpperCase()
+// }
 
-// Takes in a hex string and converts it to base64
-const HEXtoBase64 = (hex: string): string => {
-  const hexArray = hex.match(/.{1,2}/g)
-  let raw = ''
-  if (hexArray !== null) {
-    for (let i = 0; i < hexArray.length; i++) {
-      raw = raw + String.fromCharCode(parseInt(hexArray[i], 16))
-    }
-  }
-  return btoa(raw)
-}
+// // Takes in a hex string and converts it to base64
+// const HEXtoBase64 = (hex: string): string => {
+//   const hexArray = hex.match(/.{1,2}/g)
+//   let raw = ''
+//   if (hexArray !== null) {
+//     for (let i = 0; i < hexArray.length; i++) {
+//       raw = raw + String.fromCharCode(parseInt(hexArray[i], 16))
+//     }
+//   }
+//   return btoa(raw)
+// }
 
-// Takes in a base64 number and converts it to an ip address string
-const base64ToIP = (base64: string): string => {
-  let raw = ''
-  try {
-    raw = atob(base64)
-  } catch (error) {
-    return base64
-  }
-  let DEC = ''
-  for (let i = 0; i < raw.length; i++) {
-    const _dec = raw.charCodeAt(i).toString(10)
-    DEC += i === 0 ? _dec : '.' + _dec
-  }
-  return DEC
-}
+// // Takes in a base64 number and converts it to an ip address string
+// const base64ToIP = (base64: string): string => {
+//   let raw = ''
+//   try {
+//     raw = atob(base64)
+//   } catch (error) {
+//     return base64
+//   }
+//   let DEC = ''
+//   for (let i = 0; i < raw.length; i++) {
+//     const _dec = raw.charCodeAt(i).toString(10)
+//     DEC += i === 0 ? _dec : '.' + _dec
+//   }
+//   return DEC
+// }
 
-// Takes in a base64 string and converts it to a uuid string
-export const base64ToUuid = (base64: string | undefined): string => {
-  if (base64 !== undefined) {
-    let result = base64toHEX(base64)
-    result = result.replace(/(.{8})(.{4})(.{4})(.{4})(.{10})/, '$1-$2-$3-$4-$5')
-    return result
-  } else {
-    return ''
-  }
-}
+// // Takes in a base64 string and converts it to a uuid string
+// export const base64ToUuid = (base64: string | undefined): string => {
+//   if (base64 !== undefined) {
+//     let result = base64toHEX(base64)
+//     result = result.replace(/(.{8})(.{4})(.{4})(.{4})(.{10})/, '$1-$2-$3-$4-$5')
+//     return result
+//   } else {
+//     return ''
+//   }
+// }
 
-// Takes in a uuid string and converts it to a base64 string
-export const uuidToBase64 = (uuid: string): string => {
-  const noDash = uuid.replace(/-/g, '')
-  return HEXtoBase64(noDash)
-}
+// // Takes in a uuid string and converts it to a base64 string
+// export const uuidToBase64 = (uuid: string): string => {
+//   const noDash = uuid.replace(/-/g, '')
+//   return HEXtoBase64(noDash)
+// }
 
-// Takes in a base64 string and converts it to a mac address string
-const base64ToMac = (base64: string): string => {
-  let result = base64toHEX(base64)
-  result = result.replace(/(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})/, '$1:$2:$3:$4:$5:$6')
-  return result
-}
+// // Takes in a base64 string and converts it to a mac address string
+// const base64ToMac = (base64: string): string => {
+//   let result = base64toHEX(base64)
+//   result = result.replace(/(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})/, '$1:$2:$3:$4:$5:$6')
+//   return result
+// }
 
-// Takes in a key value pair and determines if it needs to be converted to a special formatted string. Used in RecursiveValues()
-export const base64Convert = (key: string, value: string) => {
-  switch (true) {
-    case key.includes('ip'):
-      return base64ToIP(value)
-    case key.includes('mac'):
-      return base64ToMac(value)
-    case key.includes('subnet'):
-      return base64ToIP(value)
-    default:
-      return value
-  }
-}
+// // Takes in a key value pair and determines if it needs to be converted to a special formatted string. Used in RecursiveValues()
+// export const base64Convert = (key: string, value: string) => {
+//   switch (true) {
+//     case key.includes('ip'):
+//       return base64ToIP(value)
+//     case key.includes('mac'):
+//       return base64ToMac(value)
+//     case key.includes('subnet'):
+//       return base64ToIP(value)
+//     default:
+//       return value
+//   }
+// }
 
 // Strips the leading string of the protobuf urls
 export const stripProtoUrl = (url: string) => {
