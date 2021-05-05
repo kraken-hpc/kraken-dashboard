@@ -2,9 +2,9 @@ import { NodeColorInfo } from './components/settings/NodeColor'
 
 export const KRAKEN_IP = '192.168.57.10:3141'
 // Polling and Reconnecting refresh rate (time in seconds between pulls)
-export const REFRESH = 0.4
+export const REFRESH = 0.5
 // Should websocket be turned on by default?
-export const WEBSOCKET = true
+export const WEBSOCKET = false
 
 export const dscUrl: string = `/dsc/nodes`
 export const cfgUrl: string = `/cfg/nodes`
