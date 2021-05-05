@@ -1,7 +1,9 @@
-import React, { Component, createRef, RefObject } from 'react'
-import vis, { Network } from 'vis-network'
+import React, { Component, createRef, CSSProperties, RefObject } from 'react'
+import { Network, Data, Options, Color } from 'vis-network'
 import { Graph } from '../../kraken-interactions/graph'
 import { COLORS } from '../../config'
+import _ from 'lodash'
+import { CloseButtonStyle, GraphAreaStyle, GraphSettingsStyle, NodeGraphStyle } from './styles/nodegraphstyles'
 
 interface NodeGraphProps {
   graphToggle: () => void
@@ -9,26 +11,25 @@ interface NodeGraphProps {
 }
 
 interface NodeGraphState {
-  data: any
+  data: Data
+  options: Options
   settingsMenu: boolean
 }
 
 export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
-  appRef: RefObject<any> | undefined = undefined
-  configRef: RefObject<any> | undefined = undefined
+  graphRef: RefObject<any> = createRef()
+  configRef: RefObject<any> = createRef()
+  network: Network | undefined = undefined
 
   constructor(props: NodeGraphProps) {
     super(props)
-
-    this.appRef = createRef()
-    this.configRef = createRef()
 
     const nodes = props.graph.nodes
 
     // Add highlight color to nodes
     for (let i = 0; i < nodes.length; i++) {
       if (nodes[i].color !== undefined) {
-        const color = nodes[i].color as vis.Color
+        const color = nodes[i].color as Color
         const highlight = {
           border: color.border,
           background: color.background,
@@ -39,62 +40,70 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       nodes[i].borderWidth = 2
     }
 
-    const data: vis.Data = {
+    const data: Data = {
       nodes: nodes,
       edges: this.props.graph.edges,
     }
 
+    const options: Options = {
+      edges: {
+        arrows: {
+          to: {
+            enabled: true,
+            scaleFactor: 1.5,
+          },
+        },
+        color: {
+          inherit: false,
+        },
+        width: 4,
+      },
+      physics: {
+        enabled: true,
+        barnesHut: {
+          gravitationalConstant: -50000,
+        },
+      },
+      height: '100%',
+      width: '100%',
+    }
+
     this.state = {
       data: data,
+      options: options,
       settingsMenu: false,
     }
   }
 
   componentDidMount() {
-    if (this.appRef !== undefined && this.configRef !== undefined) {
-      const options: any = {
-        edges: {
-          arrows: {
-            to: {
-              enabled: true,
-              scaleFactor: 1.5,
-            },
-          },
-          color: {
-            inherit: false,
-          },
-          width: 4,
-        },
-        physics: {
-          enabled: true,
-          barnesHut: {
-            gravitationalConstant: -50000,
-          },
-        },
-        height: '100%',
-        width: '100%',
-        configure: {
-          filter: (option: any, path: any) => {
-            if (path.indexOf('physics') !== -1) {
-              return true
-            }
-            if (path.indexOf('smooth') !== -1 || option === 'smooth') {
-              return true
-            }
-            return false
-          },
-          container: this.configRef.current,
-        },
-      }
+    const options = _.cloneDeep(this.state.options)
 
-      const network = new Network(this.appRef.current, this.state.data, options)
-      network.fit(options)
-    } else {
-      console.log('graph: ', this.appRef, 'config: ', this.configRef)
+    options.configure = {
+      filter: (option: any, path: any) => {
+        if (path.indexOf('physics') !== -1) {
+          return true
+        }
+        if (path.indexOf('smooth') !== -1 || option === 'smooth') {
+          return true
+        }
+        return false
+      },
+      container: this.configRef.current,
     }
+
+    this.setState(
+      {
+        options: options,
+      },
+      () => {
+        this.network = new Network(this.graphRef.current, this.state.data, this.state.options)
+
+        // console.log(this.network)
+      }
+    )
   }
 
-  componentDidUpdate(prevProps: NodeGraphProps) {
+  componentDidUpdate(prevProps: NodeGraphProps, prevState: NodeGraphState) {
     if (this.props.graph !== prevProps.graph) {
       const data = this.state.data
       const nodes = this.props.graph.nodes
@@ -102,7 +111,7 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       // Add highlight color to nodes
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].color !== undefined) {
-          const color = nodes[i].color as vis.Color
+          const color = nodes[i].color as Color
           const highlight = {
             border: color.border,
             background: color.background,
@@ -113,8 +122,8 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
         nodes[i].borderWidth = 2
       }
 
-      data.nodes.update(nodes)
-      data.edges.update(this.props.graph.edges)
+      data.nodes = nodes
+      data.edges = this.props.graph.edges
       this.forceUpdate()
     }
   }
@@ -126,10 +135,14 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
   }
 
   render() {
+    const settingsStyle: CSSProperties = {
+      width: this.state.settingsMenu ? '20%' : '0px',
+      visibility: this.state.settingsMenu ? 'visible' : 'hidden',
+    }
     return (
-      <div className={`graph-area`}>
+      <div style={GraphAreaStyle}>
         <div
-          className='close-button'
+          style={CloseButtonStyle}
           onClick={() => {
             this.props.graphToggle()
           }}>
@@ -144,12 +157,8 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
         <button style={{ position: 'absolute', top: 5, zIndex: 10, left: 25 }} onClick={this.toggleSettings}>
           settings
         </button>
-        <div className={`node-graph`} ref={this.appRef} />
-        <div
-          style={this.state.settingsMenu ? { display: 'block' } : { display: 'none' }}
-          className={`graph-settings`}
-          ref={this.configRef}
-        />
+        <div style={{ ...GraphSettingsStyle, ...settingsStyle }} ref={this.configRef} />
+        <div style={NodeGraphStyle} ref={this.graphRef} />
       </div>
     )
   }

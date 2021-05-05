@@ -1,6 +1,7 @@
-import React, { Component, createRef, RefObject } from 'react'
+import React, { Component, createRef, CSSProperties, RefObject } from 'react'
 import { Network, Options, Data } from 'vis-network'
 import _ from 'lodash'
+import { GraphSettingsStyle } from '../nodeview/styles/nodegraphstyles'
 
 interface GraphViewerProps {}
 interface GraphViewerState {
@@ -55,7 +56,7 @@ export default class GraphViewer extends Component<GraphViewerProps, GraphViewer
   }
 
   componentDidMount = () => {
-    console.log(this.graphRef.current)
+    // console.log(this.graphRef.current)
 
     const options = _.cloneDeep(this.state.options)
 
@@ -79,7 +80,7 @@ export default class GraphViewer extends Component<GraphViewerProps, GraphViewer
       () => {
         this.network = new Network(this.graphRef.current, this.state.data, this.state.options)
 
-        console.log(this.network)
+        // console.log(this.network)
       }
     )
   }
@@ -119,7 +120,18 @@ export default class GraphViewer extends Component<GraphViewerProps, GraphViewer
     }
   }
 
+  toggleSettings = () => {
+    this.setState({
+      settingsMenuOpen: !this.state.settingsMenuOpen,
+    })
+  }
+
   render = () => {
+    const settingsStyle: CSSProperties = {
+      width: this.state.settingsMenuOpen ? '25%' : '0px',
+      visibility: this.state.settingsMenuOpen ? 'visible' : 'hidden',
+    }
+
     return (
       <div
         style={{
@@ -129,10 +141,12 @@ export default class GraphViewer extends Component<GraphViewerProps, GraphViewer
         }}>
         <textarea
           style={{
-            flexGrow: 1,
+            flexGrow: 0,
+            flexShrink: 0,
+            width: '20%',
             resize: 'horizontal',
             overflow: 'auto',
-            whiteSpace: 'nowrap',
+            whiteSpace: 'pre',
           }}
           placeholder={'Graph JSON Here'}
           value={this.state.inputText}
@@ -148,22 +162,21 @@ export default class GraphViewer extends Component<GraphViewerProps, GraphViewer
             })
           }}
         />
-        <div
-          ref={this.configRef}
-          style={{
-            flexGrow: 1,
-            display: 'none',
-          }}
-        />
-        <div
-          style={{
-            flexGrow: 3,
-            flexBasis: 0,
-            overflow: 'hidden',
-            outline: 'none',
-          }}
-          ref={this.graphRef}
-        />
+        <div style={{ flexGrow: 1, display: 'flex', position: 'relative' }}>
+          <button style={{ position: 'absolute', top: 5, zIndex: 10, left: 25 }} onClick={this.toggleSettings}>
+            settings
+          </button>
+          <div ref={this.configRef} style={{ ...GraphSettingsStyle, ...settingsStyle }} />
+          <div
+            style={{
+              flexGrow: 3,
+              flexBasis: 0,
+              overflow: 'hidden',
+              outline: 'none',
+            }}
+            ref={this.graphRef}
+          />
+        </div>
       </div>
     )
   }

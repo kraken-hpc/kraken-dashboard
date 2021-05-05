@@ -716,9 +716,6 @@ class App extends Component<AppProps, AppState> {
               {({ height, width }) => (
                 <div style={{ width: width, height: height }}>
                   <Route
-                    onchange={() => {
-                      console.log('route got clicked!')
-                    }}
                     exact
                     path='/'
                     render={() => (
