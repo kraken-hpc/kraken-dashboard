@@ -139,7 +139,6 @@ class App extends Component<AppProps, AppState> {
         graph: undefined,
         colorInfo: defaultNodeColorInfo,
       })
-      return
     }
 
     // If any config information has changed, tell the worker

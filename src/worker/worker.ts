@@ -51,6 +51,9 @@ ctx.addEventListener('message', messageEvent => {
       if (message.config) {
         if (connectionManagerProps) {
           connectionManagerProps.setState(message.config)
+        } else {
+          const responseMessage: WorkerMessage = { type: 'ERROR', error: 'connection manager props is undefined' }
+          ctx.postMessage(responseMessage)
         }
       } else {
         const responseMessage: WorkerMessage = { type: 'ERROR', error: 'message config was undefined' }

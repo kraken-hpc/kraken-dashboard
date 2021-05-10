@@ -118,10 +118,9 @@ export class ConnectionManager {
     })
 
     this.state.select('liveConnectionActive').subscribe(lca => {
-      const state = this.state.getStateSnapshot()
       // stop old connection
       this.stopPolling()
-      if (state.liveConnectionActive !== 'REFETCH') {
+      if (lca !== 'REFETCH') {
         this.stopWebSocket()
       }
       this.stopReconnect()
@@ -216,13 +215,17 @@ export class ConnectionManager {
   // It pulls the cfg node state
   // If it eventually gets the cfg nodes it will refetch and activate either the websocket or polling
   reconnectFunction = () => {
-    cfgNodeFetch(this.getUrl(cfgUrl)).then(cfgNodes => {
-      if (cfgNodes.masterNode !== null && cfgNodes.computeNodes !== null && cfgNodes.masterNode.id !== undefined) {
-        this.state.setState({
-          liveConnectionActive: 'REFETCH',
-        })
-      }
-    })
+    cfgNodeFetch(this.getUrl(cfgUrl))
+      .then(cfgNodes => {
+        if (cfgNodes.masterNode !== null && cfgNodes.computeNodes !== null && cfgNodes.masterNode.id !== undefined) {
+          this.state.setState({
+            liveConnectionActive: 'REFETCH',
+          })
+        }
+      })
+      .catch(error => {
+        // catch error but do nothing with it
+      })
   }
 
   getGraph = () => {
@@ -247,42 +250,50 @@ export class ConnectionManager {
     console.log('Refetching')
     const props = this.props.getStateSnapshot()
     // Get cfg and dsc nodes
-    allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl)).then(allNodes => {
-      getGraph(props.ip, props.updatingGraph).then(graph => {
-        const sortedAllNodes = sortAllNodes(allNodes)
-        if (
-          sortedAllNodes.cfgMasterNode !== null &&
-          sortedAllNodes.cfgComputeNodes !== null &&
-          sortedAllNodes.dscMasterNode !== null &&
-          sortedAllNodes.dscComputeNodes !== null
-        ) {
-          this.state.setState({
-            cfgMaster: sortedAllNodes.cfgMasterNode,
-            cfgNodes: sortedAllNodes.cfgComputeNodes,
-            dscMaster: sortedAllNodes.dscMasterNode,
-            dscNodes: sortedAllNodes.dscComputeNodes,
-            graph: graph === null ? undefined : graph,
-          })
-          switch (props.preferredConnectionType) {
-            case 'WEBSOCKET':
-              this.state.setState({
-                liveConnectionActive: 'WEBSOCKET',
-              })
-              break
-            case 'POLL':
-              this.state.setState({
-                liveConnectionActive: 'POLLING',
-              })
-              break
+    allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl))
+      .then(allNodes => {
+        getGraph(props.ip, props.updatingGraph).then(graph => {
+          const sortedAllNodes = sortAllNodes(allNodes)
+          if (
+            sortedAllNodes.cfgMasterNode !== null &&
+            sortedAllNodes.cfgComputeNodes !== null &&
+            sortedAllNodes.dscMasterNode !== null &&
+            sortedAllNodes.dscComputeNodes !== null
+          ) {
+            this.state.setState({
+              cfgMaster: sortedAllNodes.cfgMasterNode,
+              cfgNodes: sortedAllNodes.cfgComputeNodes,
+              dscMaster: sortedAllNodes.dscMasterNode,
+              dscNodes: sortedAllNodes.dscComputeNodes,
+              graph: graph === null ? undefined : graph,
+            })
+            switch (props.preferredConnectionType) {
+              case 'WEBSOCKET':
+                this.state.setState({
+                  liveConnectionActive: 'WEBSOCKET',
+                })
+                break
+              case 'POLL':
+                this.state.setState({
+                  liveConnectionActive: 'POLLING',
+                })
+                break
+            }
+          } else {
+            this.state.setState({
+              liveConnectionActive: 'RECONNECT',
+            })
+            return
           }
-        } else {
-          this.state.setState({
-            liveConnectionActive: 'RECONNECT',
-          })
-          return
-        }
+        })
       })
-    })
+      .catch(error => {
+        // failed to get nodes, starting reconnect
+        this.state.setState({
+          liveConnectionActive: 'RECONNECT',
+        })
+        return
+      })
     // Get state enums
     getStateData(this.getUrl(stateOptionsUrl)).then(nodeStateOptions => {
       if (nodeStateOptions !== null) {
