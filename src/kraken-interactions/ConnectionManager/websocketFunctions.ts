@@ -23,28 +23,22 @@ export const handleWebSocketMessage = (
   const newDscNodes = cloneDeep(dscNodes)
   let dscUpdateHappened = false
   if (jsonData.type === 1) {
-    // console.log('type 1')
     // If it's a creation message, stop the loop and pull cfgNodes and dscNodes
     if (jsonData.data.includes('(CREATE)') || jsonData.data.includes('(CFG_UPDATE')) {
       console.log('Creation or update found. Close websocket and pull dsc and cfg nodes')
       setLiveConnection('REFETCH')
-      // break
     } else {
-      // console.log("doesn't include create or cfg update")
       const jsonMessage: WsMessage = jsonData
       // This is a physstate or runstate update
       if (jsonMessage.url === '/PhysState' || jsonMessage.url === '/RunState') {
-        // console.log('url is phystate or runstate')
         const newCfgNode = newCfgNodes.get(jsonMessage.nodeid)
         const newDscNode = newDscNodes.get(jsonMessage.nodeid)
         if (newCfgNode === undefined || newDscNode === undefined) {
           console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
           setLiveConnection('REFETCH')
-          // break
         } else {
           switch (jsonMessage.url) {
             case '/PhysState':
-              // console.log("it's physstate")
               newCfgNode.physState = jsonMessage.value as KrakenPhysState
               newDscNode.physState = jsonMessage.value as KrakenPhysState
               if (jsonMessage.value === 'POWER_OFF') {
@@ -55,10 +49,8 @@ export const handleWebSocketMessage = (
                 newDscNode.runState = 'UNKNOWN'
               }
               dscUpdateHappened = true
-              // newNodes.set(base64Id, newNode)
               break
             case '/RunState':
-              // console.log("it's runstate")
               if (
                 jsonMessage.value !== 'UNKNOWN' &&
                 (newCfgNode.physState === 'PHYS_UNKNOWN' ||
@@ -73,9 +65,7 @@ export const handleWebSocketMessage = (
               } else {
                 newCfgNode.runState = jsonMessage.value as KrakenRunState
                 newDscNode.runState = jsonMessage.value as KrakenRunState
-                // console.log('runstate update')
                 dscUpdateHappened = true
-                // newNodes.set(base64Id, newNode)
                 break
               }
             default:
@@ -90,7 +80,6 @@ export const handleWebSocketMessage = (
         if (newCfgNode === undefined || newDscNode === undefined) {
           console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
           setLiveConnection('REFETCH')
-          // break
         } else {
           const updatedCfgNode = updateFromWsMessage(newCfgNode, jsonMessage)
           if (updatedCfgNode !== undefined) {
