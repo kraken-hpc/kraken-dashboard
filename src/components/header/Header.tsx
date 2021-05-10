@@ -11,11 +11,12 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import CSS from 'csstype'
 import { COLORS } from '../../config'
+import { ConnectionType } from '../../kraken-interactions/ConnectionManager/connection'
 
 interface HeaderProps {
   refreshRate: number
   handleRefreshChange: (refreshRate: number) => void
-  useWebSocket: boolean
+  preferredConnectionType: ConnectionType
   handleWebsocketChange: (websocket: boolean) => void
   krakenIP: string
   handleIpChange: (ip: string) => void
@@ -30,7 +31,7 @@ export function Header(props: HeaderProps) {
       <SettingsArea
         refreshRate={props.refreshRate}
         handleRefreshChange={props.handleRefreshChange}
-        useWebSocket={props.useWebSocket}
+        preferredConnectionType={props.preferredConnectionType}
         handleWebsocketChange={props.handleWebsocketChange}
         krakenIP={props.krakenIP}
         handleIpChange={props.handleIpChange}
@@ -42,7 +43,7 @@ export function Header(props: HeaderProps) {
 interface SettingsAreaProps {
   refreshRate: number
   handleRefreshChange: (refreshRate: number) => void
-  useWebSocket: boolean
+  preferredConnectionType: ConnectionType
   handleWebsocketChange: (websocket: boolean) => void
   krakenIP: string
   handleIpChange: (ip: string) => void
@@ -97,7 +98,7 @@ class SettingsArea extends React.Component<SettingsAreaProps, SettingsAreaState>
           menuOpen={this.state.menuOpen}
           refreshRate={this.props.refreshRate}
           handleRefreshChange={this.props.handleRefreshChange}
-          useWebSocket={this.props.useWebSocket}
+          preferredConnectionType={this.props.preferredConnectionType}
           handleWebsocketChange={this.props.handleWebsocketChange}
           closeMenu={this.closeMenu}
           krakenIP={this.props.krakenIP}
@@ -112,7 +113,7 @@ interface SettingsModalProps {
   menuOpen: boolean
   refreshRate: number
   handleRefreshChange: (refreshRate: number) => void
-  useWebSocket: boolean
+  preferredConnectionType: ConnectionType
   handleWebsocketChange: (websocket: boolean) => void
   closeMenu: () => void
   buttonRef: SVGSVGElement | null
@@ -221,9 +222,9 @@ class SettingsModal extends React.Component<SettingsModalProps, SettingsModalSta
             style={{ margin: `auto 7px` }}
             name='websocket'
             type='checkbox'
-            checked={this.props.useWebSocket}
-            onChange={() => {
-              this.props.handleWebsocketChange(!this.props.useWebSocket)
+            checked={this.props.preferredConnectionType === 'WEBSOCKET'}
+            onChange={e => {
+              this.props.handleWebsocketChange(e.target.checked)
             }}
           />
         </div>

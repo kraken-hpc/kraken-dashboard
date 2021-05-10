@@ -45,6 +45,7 @@ export const CloseButtonStyle: CSSProperties = {
   borderColor: COLORS.borderGrey,
   borderRadius: 50,
   cursor: 'pointer',
+  zIndex: 105,
 }
 
 export const GraphSettingsStyle: CSSProperties = {
