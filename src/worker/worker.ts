@@ -23,7 +23,7 @@ export interface WorkerMessage {
   connectionType?: ConnectionType
 }
 
-/* eslint-disable-next-line no-restricted-globals */
+// eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any
 
 console.log('hello from web worker')
@@ -72,6 +72,7 @@ ctx.addEventListener('message', messageEvent => {
           ...{ newData: receivedNewData, setPreferredConnectionType: setPreferredConnectionType },
         }
         connectionManagerProps = new SimpleStore<ConnectionManagerProps>(newConnectionManagerProps)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         connectionManager = new ConnectionManager(connectionManagerProps)
       } else {
         const responseMessage: WorkerMessage = { type: 'ERROR', error: 'start message config was undefined' }

@@ -614,3 +614,34 @@ export const sortNodeArrays = (node: Node) => {
     node.services.sort()
   }
 }
+
+export const sortAllNodes = (allNodes: AllNodes): AllNodes => {
+  const finalAllNodes: AllNodes = {
+    cfgMasterNode: cloneDeep(allNodes.cfgMasterNode),
+    cfgComputeNodes: allNodes.cfgComputeNodes,
+    dscMasterNode: cloneDeep(allNodes.dscMasterNode),
+    dscComputeNodes: allNodes.dscComputeNodes,
+  }
+
+  if (allNodes.cfgComputeNodes) {
+    finalAllNodes.cfgComputeNodes = new Map(
+      [...allNodes.cfgComputeNodes.entries()].sort((a, b) => nodeSort(a[1], b[1]))
+    )
+
+    if (allNodes.dscComputeNodes) {
+      const sortedIds = Array.from(finalAllNodes.cfgComputeNodes.keys())
+
+      const finalDscNodes = new Map<string, Node>()
+      for (let index = 0; index < sortedIds.length; index++) {
+        const id = sortedIds[index]
+        const dscNode = allNodes.dscComputeNodes.get(id)
+        if (dscNode) {
+          finalDscNodes.set(id, dscNode)
+        }
+      }
+      finalAllNodes.dscComputeNodes = finalDscNodes
+    }
+  }
+
+  return finalAllNodes
+}

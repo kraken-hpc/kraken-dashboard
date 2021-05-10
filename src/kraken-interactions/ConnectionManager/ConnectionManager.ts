@@ -1,14 +1,13 @@
 // import { Component, useState, useEffect, useRef, useCallback } from 'react'
 import { cfgUrl, dscUrl, graphUrlSingle, stateOptionsUrl, webSocketUrl } from '../../config'
 import { ConnectionType, getUrl, LiveConnectionType } from './connection'
-import { allNodeFetch, cfgNodeFetch, Node } from '../node'
+import { allNodeFetch, cfgNodeFetch, Node, sortAllNodes } from '../node'
 import { getStateData, NodeStateCategory } from '../nodeStateOptions'
 import { Graph } from '../graph'
 import { fetchJsonFromUrl } from '../fetch'
 import { getGraph, pollingFunction } from './pollingFunctions'
 import { handleWebSocketMessage, subscribe } from './websocketFunctions'
 import { WorkerConfig } from '../../worker/worker'
-import { isEqual, cloneDeep } from 'lodash'
 import { SimpleStore } from './SimpleStore'
 
 export interface ConnectionManagerProps extends WorkerConfig {
@@ -32,8 +31,7 @@ export class ConnectionManager {
   websocket: WebSocket | undefined = undefined
   state: SimpleStore<ConnectionManagerState>
   props: SimpleStore<ConnectionManagerProps>
-  // setState: React.Dispatch<React.SetStateAction<ConnectionManagerState>>
-  // props:
+
   constructor(props: SimpleStore<ConnectionManagerProps>) {
     this.props = props
     this.state = new SimpleStore<ConnectionManagerState>({
@@ -52,6 +50,7 @@ export class ConnectionManager {
   }
 
   subscribeToChanges = () => {
+    // If any node info changes, send updates to the main thread
     this.state
       .selectMany([
         'cfgMaster',
@@ -67,15 +66,8 @@ export class ConnectionManager {
         const props = this.props.getStateSnapshot()
         props.newData(this.state.getStateSnapshot())
       })
-    // if (
-    //   this.state.cfgMaster !== prevState.cfgMaster ||
-    //   this.state.cfgNodes !== prevState.cfgNodes ||
-    //   this.state.dscMaster !== prevState.dscMaster ||
-    //   this.state.dscNodes !== prevState.dscNodes
-    // ) {
-    //   this.props.newData
-    // }
 
+    // If the websocket checkbox has changed
     this.props.select('preferredConnectionType').subscribe(pct => {
       const state = this.state.getStateSnapshot()
       if (state.liveConnectionActive !== 'RECONNECT') {
@@ -90,20 +82,7 @@ export class ConnectionManager {
       }
     })
 
-    // If the websocket checkbox has changed
-    // if (this.props.preferredConnectionType !== prevProps.preferredConnectionType) {
-    //   if (this.state.liveConnectionActive !== 'RECONNECT') {
-    //     switch (this.props.preferredConnectionType) {
-    //       case 'WEBSOCKET':
-    //         this.setState({ liveConnectionActive: 'WEBSOCKET' })
-    //         break
-    //       case 'POLL':
-    //         this.setState({ liveConnectionActive: 'POLLING' })
-    //         break
-    //     }
-    //   }
-    // }
-
+    // If we just started updating the graph, get the graph
     this.props.select('updatingGraph').subscribe(ug => {
       console.log('updating graph changed: ', ug)
       if (ug !== undefined) {
@@ -111,11 +90,7 @@ export class ConnectionManager {
       }
     })
 
-    // // If we just started updating the graph, get the graph
-    // if (this.props.updatingGraph !== prevProps.updatingGraph && this.props.updatingGraph !== undefined) {
-    //   this.getGraph()
-    // }
-
+    // If refresh rate has changed, restart the live connection
     this.props.select('refreshRate').subscribe(rr => {
       const state = this.state.getStateSnapshot()
       switch (state.liveConnectionActive) {
@@ -130,20 +105,7 @@ export class ConnectionManager {
       }
     })
 
-    // // If refresh rate has changed, restart the live connection
-    // if (this.props.refreshRate !== prevProps.refreshRate) {
-    //   switch (this.state.liveConnectionActive) {
-    //     case 'POLLING':
-    //       this.stopPolling()
-    //       this.startPolling()
-    //       break
-    //     case 'RECONNECT':
-    //       this.stopReconnect()
-    //       this.startReconnect()
-    //       break
-    //   }
-    // }
-
+    // If ip has changed, delete everything and restart
     this.props.select('ip').subscribe(ip => {
       this.state.setState({
         cfgMaster: {},
@@ -154,19 +116,6 @@ export class ConnectionManager {
         graph: undefined,
       })
     })
-
-    // If ip has changed, delete everything and restart
-    // if (this.props.ip !== prevProps.ip) {
-    //   this.setState({
-    //     cfgMaster: {},
-    //     cfgNodes: new Map(),
-    //     dscMaster: {},
-    //     dscNodes: new Map(),
-    //     liveConnectionActive: 'REFETCH',
-    //     graph: undefined,
-    //   })
-    //   return
-    // }
 
     this.state.select('liveConnectionActive').subscribe(lca => {
       const state = this.state.getStateSnapshot()
@@ -193,39 +142,6 @@ export class ConnectionManager {
           break
       }
     })
-
-    // if (prevState.liveConnectionActive !== this.state.liveConnectionActive) {
-    //   // Stop polling or close websocket
-    //   switch (prevState.liveConnectionActive) {
-    //     case 'POLLING':
-    //       this.stopPolling()
-    //       break
-    //     case 'WEBSOCKET':
-    //       if (this.state.liveConnectionActive !== 'REFETCH') {
-    //         this.stopWebSocket()
-    //       }
-    //       break
-    //     case 'RECONNECT':
-    //       this.stopReconnect()
-    //       break
-    //   }
-
-    //   // Start new live connection
-    //   switch (this.state.liveConnectionActive) {
-    //     case 'POLLING':
-    //       this.startPolling()
-    //       break
-    //     case 'WEBSOCKET':
-    //       this.startWebSocket(this.refetch)
-    //       break
-    //     case 'RECONNECT':
-    //       this.startReconnect()
-    //       break
-    //     case 'REFETCH':
-    //       this.refetch()
-    //       break
-    //   }
-    // }
   }
 
   stopPolling = () => {
@@ -254,17 +170,18 @@ export class ConnectionManager {
           this.state.setState({ liveConnectionActive: liveConnectionType })
         },
         allNodes => {
+          const sortedAllNodes = sortAllNodes(allNodes)
           if (
-            allNodes.cfgMasterNode !== null &&
-            allNodes.cfgComputeNodes !== null &&
-            allNodes.dscMasterNode !== null &&
-            allNodes.dscComputeNodes
+            sortedAllNodes.cfgMasterNode !== null &&
+            sortedAllNodes.cfgComputeNodes !== null &&
+            sortedAllNodes.dscMasterNode !== null &&
+            sortedAllNodes.dscComputeNodes
           ) {
             this.state.setState({
-              cfgMaster: allNodes.cfgMasterNode,
-              cfgNodes: allNodes.cfgComputeNodes,
-              dscMaster: allNodes.dscMasterNode,
-              dscNodes: allNodes.dscComputeNodes,
+              cfgMaster: sortedAllNodes.cfgMasterNode,
+              cfgNodes: sortedAllNodes.cfgComputeNodes,
+              dscMaster: sortedAllNodes.dscMasterNode,
+              dscNodes: sortedAllNodes.dscComputeNodes,
             })
           }
         },
@@ -332,17 +249,18 @@ export class ConnectionManager {
     // Get cfg and dsc nodes
     allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl)).then(allNodes => {
       getGraph(props.ip, props.updatingGraph).then(graph => {
+        const sortedAllNodes = sortAllNodes(allNodes)
         if (
-          allNodes.cfgMasterNode !== null &&
-          allNodes.cfgComputeNodes !== null &&
-          allNodes.dscMasterNode !== null &&
-          allNodes.dscComputeNodes !== null
+          sortedAllNodes.cfgMasterNode !== null &&
+          sortedAllNodes.cfgComputeNodes !== null &&
+          sortedAllNodes.dscMasterNode !== null &&
+          sortedAllNodes.dscComputeNodes !== null
         ) {
           this.state.setState({
-            cfgMaster: allNodes.cfgMasterNode,
-            cfgNodes: allNodes.cfgComputeNodes,
-            dscMaster: allNodes.dscMasterNode,
-            dscNodes: allNodes.dscComputeNodes,
+            cfgMaster: sortedAllNodes.cfgMasterNode,
+            cfgNodes: sortedAllNodes.cfgComputeNodes,
+            dscMaster: sortedAllNodes.dscMasterNode,
+            dscNodes: sortedAllNodes.dscComputeNodes,
             graph: graph === null ? undefined : graph,
           })
           switch (props.preferredConnectionType) {

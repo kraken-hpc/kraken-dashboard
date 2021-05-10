@@ -11,12 +11,10 @@ import { REFRESH, defaultNodeColorInfo, KRAKEN_IP, cfgUrlSingle, dscUrlSingle, C
 import { HashRouter, Route } from 'react-router-dom'
 import { Header } from './components/header/Header'
 import { Dashboard } from './components/dashboard/Dashboard'
-import { Node, nodeSort, mergeDSCandCFG } from './kraken-interactions/node'
+import { Node } from './kraken-interactions/node'
 import { ConnectionType, LiveConnectionType } from './kraken-interactions/ConnectionManager/connection'
-import { fetchJsonFromUrl } from './kraken-interactions/fetch'
 import { NodeView } from './components/nodeview/NodeView'
 import { Graph } from './kraken-interactions/graph'
-import { cloneDeep } from 'lodash'
 import {
   NodeColor,
   NodeColorInfo,
@@ -24,7 +22,7 @@ import {
   ValuesToColorFromJSON,
   NodeColorInfoArea,
 } from './components/settings/NodeColor'
-import { getStateData, NodeStateCategory } from './kraken-interactions/nodeStateOptions'
+import { NodeStateCategory } from './kraken-interactions/nodeStateOptions'
 import GraphViewer from './components/graph-viewer/GraphViewer'
 import AutoSizer from 'react-virtualized-auto-sizer'
 // eslint-disable-next-line import/no-webpack-loader-syntax
@@ -113,7 +111,12 @@ class App extends Component<AppProps, AppState> {
             liveConnectionActive: data.liveConnectionActive,
             nodeStateOptions: data.nodeStateOptions,
           })
-          this.setFinalNodes(data.cfgMaster, data.cfgNodes, data.dscMaster, data.dscNodes)
+          this.setState({
+            cfgMaster: data.cfgMaster,
+            cfgNodes: data.cfgNodes,
+            dscMaster: data.dscMaster,
+            dscNodes: data.dscNodes,
+          })
         }
         break
       case 'ERROR':
@@ -187,192 +190,6 @@ class App extends Component<AppProps, AppState> {
       })
     }
   }
-
-  setFinalNodes = (
-    cfgMaster: Node,
-    cfgNodes: Map<string, Node>,
-    dscMaster: Node,
-    dscNodes: Map<string, Node>,
-    callback?: () => void
-  ) => {
-    let newCfgNodes = cloneDeep(cfgNodes)
-    let finalNodes: Map<string, Node> = new Map()
-
-    // Set the dsc physstate and runstate to the final nodes value
-    newCfgNodes.forEach((value, key, map) => {
-      const dscNode = dscNodes.get(key)
-      if (dscNode !== undefined) {
-        const newValue = mergeDSCandCFG(value, dscNode)
-
-        if (newValue.id !== undefined) {
-          finalNodes.set(newValue.id, newValue)
-        }
-        // value.physState = dscNode.physState
-        // value.runState = dscNode.runState
-      }
-    })
-
-    const nodeOrder: Map<string, number> = new Map() // [nodeId]index
-
-    const finalDscNodes: Map<string, Node> = new Map()
-    const finalCfgNodes: Map<string, Node> = new Map()
-
-    // Sort the Maps
-    const finalNodesArray = Array.from(finalNodes.values()).sort(nodeSort)
-    finalNodes = new Map()
-    for (let i = 0; i < finalNodesArray.length; i++) {
-      const id = finalNodesArray[i].id
-      if (id !== undefined) {
-        finalNodes.set(id, finalNodesArray[i])
-        const dscNode = dscNodes.get(id)
-        const cfgNode = cfgNodes.get(id)
-        if (dscNode !== undefined) {
-          finalDscNodes.set(id, dscNode)
-        }
-        if (cfgNode !== undefined) {
-          finalCfgNodes.set(id, cfgNode)
-        }
-        nodeOrder.set(id, i)
-      }
-    }
-
-    // Set master node discoverable information
-    const finalMaster = cfgMaster
-    finalMaster.physState = dscMaster.physState
-    finalMaster.runState = dscMaster.runState
-
-    this.setState(
-      {
-        // masterNode: finalMaster,
-        // nodes: finalNodes,
-        cfgMaster: cfgMaster,
-        cfgNodes: finalCfgNodes,
-        dscMaster: dscMaster,
-        dscNodes: finalDscNodes,
-      },
-      callback
-    )
-  }
-
-  // Checks if nodelists are the same lenth and that master nodes are defined
-  validateNodes = (
-    cfgMaster: Node,
-    cfgNodes: Map<string, Node>,
-    dscMaster: Node,
-    dscNodes: Map<string, Node>
-  ): Error | null => {
-    if (cfgMaster.id === undefined) {
-      return Error('Missing cfg master')
-    }
-    if (Object.entries(dscMaster).length === 0) {
-      return Error('Missing dsc master')
-    }
-    if (cfgNodes.size !== dscNodes.size) {
-      return Error('cfg and dsc node lists are different sizes')
-    }
-    cfgNodes.forEach(node => {
-      if (node.id !== undefined) {
-        const dscNode = dscNodes.get(node.id)
-        if (dscNode === undefined) {
-          return Error('Could not find a cfg node in dsc node list')
-        }
-      } else {
-        return Error('A compute node id was undefined')
-      }
-    })
-    return null
-  }
-
-  // stopReconnect = () => {
-  //   if (this.reconnectTimeout !== undefined) {
-  //     clearInterval(this.reconnectTimeout)
-  //   }
-  //   this.reconnectTimeout = undefined
-  // }
-
-  // startReconnect = () => {
-  //   console.log('Starting Reconnect')
-  //   // Set hard minimum for refresh rate
-  //   let finalRefreshRate = this.state.refreshRate
-  //   if (finalRefreshRate < 0.15) {
-  //     finalRefreshRate = 0.15
-  //   }
-  //   this.reconnectTimeout = setInterval(this.reconnectFunction, finalRefreshRate * 1000)
-  // }
-
-  // // When reconnect is activated this function will be run every refresh rate.
-  // // It pulls the cfg node state
-  // // If it eventually gets the cfg nodes it will refetch and activate either the websocket or polling
-  // reconnectFunction = () => {
-  //   cfgNodeFetch(this.getUrl(cfgUrl)).then(cfgNodes => {
-  //     if (cfgNodes.masterNode !== null && cfgNodes.computeNodes !== null && cfgNodes.masterNode.id !== undefined) {
-  //       this.setState({
-  //         liveConnectionActive: 'REFETCH',
-  //       })
-  //     }
-  //   })
-  // }
-
-  // refetch = () => {
-  //   console.log('Refetching')
-  //   // Get cfg and dsc nodes
-  //   allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl)).then(allNodes => {
-  //     if (
-  //       allNodes.cfgMasterNode !== null &&
-  //       allNodes.cfgComputeNodes !== null &&
-  //       allNodes.dscMasterNode !== null &&
-  //       allNodes.dscComputeNodes !== null
-  //     ) {
-  //       this.setFinalNodes(
-  //         allNodes.cfgMasterNode,
-  //         allNodes.cfgComputeNodes,
-  //         allNodes.dscMasterNode,
-  //         allNodes.dscComputeNodes,
-  //         () => {
-  //           // if (this.state.useWebSocket) {
-  //           //   this.setState({
-  //           //     liveConnectionActive: 'WEBSOCKET',
-  //           //   })
-  //           // } else {
-  //           //   this.setState({
-  //           //     liveConnectionActive: 'POLLING',
-  //           //   })
-  //           // }
-  //         }
-  //       )
-  //     } else {
-  //       this.setState({
-  //         liveConnectionActive: 'RECONNECT',
-  //       })
-  //       return
-  //     }
-  //   })
-  //   // Get state enums
-  //   getStateData(this.getUrl(stateOptionsUrl)).then(nodeStateOptions => {
-  //     if (nodeStateOptions !== null) {
-  //       this.setState(
-  //         {
-  //           nodeStateOptions: nodeStateOptions,
-  //         },
-  //         this.getStoredColorInfo
-  //       )
-  //     }
-  //   })
-  // }
-
-  // getGraph = (uuid: string) => {
-  //   fetchJsonFromUrl(this.getUrl(graphUrlSingle(uuid))).then(graph => {
-  //     if (graph === null) {
-  //       this.setState({
-  //         liveConnectionActive: 'RECONNECT',
-  //       })
-  //     } else {
-  //       this.setState({
-  //         graph: graph,
-  //       })
-  //     }
-  //   })
-  // }
 
   startUpdatingGraph = (uuid: string) => {
     this.setState({
