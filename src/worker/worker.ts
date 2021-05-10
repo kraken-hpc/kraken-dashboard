@@ -48,7 +48,7 @@ const setPreferredConnectionType = (connectionType: ConnectionType) => {
 }
 
 ctx.addEventListener('message', messageEvent => {
-  console.log('in webworker', messageEvent.data)
+  // console.log('in webworker', messageEvent.data)
   const message = messageEvent.data as WorkerMessage
   switch (message.type) {
     case 'ERROR':

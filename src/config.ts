@@ -20,19 +20,6 @@ export const graphUrlSingle = (uuid: string): string => {
   return `/graph/node/${uuid}/json`
 }
 
-// export const COLORS = {
-//   red: window.getComputedStyle(document.documentElement).getPropertyValue('--red'),
-//   purple: window.getComputedStyle(document.documentElement).getPropertyValue('--purple'),
-//   grey: window.getComputedStyle(document.documentElement).getPropertyValue('--grey'),
-//   yellow: window.getComputedStyle(document.documentElement).getPropertyValue('--yellow'),
-//   blue: window.getComputedStyle(document.documentElement).getPropertyValue('--blue'),
-//   green: window.getComputedStyle(document.documentElement).getPropertyValue('--green'),
-//   black: window.getComputedStyle(document.documentElement).getPropertyValue('--black'),
-//   titleRed: window.getComputedStyle(document.documentElement).getPropertyValue('--title-red'),
-//   borderGrey: window.getComputedStyle(document.documentElement).getPropertyValue('--border-grey'),
-//   lightGrey: window.getComputedStyle(document.documentElement).getPropertyValue('--light-grey'),
-// }
-
 export const COLORS = {
   yellow: '#f2cf66',
   red: '#e74c3c',
@@ -47,7 +34,6 @@ export const COLORS = {
   lightGreen: '#90d87d',
   blue: '#509EE8',
   black: '#000000',
-  titleRed: '#FF6656',
   titleYellow: '#ffeead',
   borderGrey: '#7a7a7a',
   lightGrey: '#cacaca',

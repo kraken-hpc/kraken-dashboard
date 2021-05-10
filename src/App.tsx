@@ -103,7 +103,7 @@ class App extends Component<AppProps, AppState> {
   handleWorkerMessages = (message: WorkerMessage) => {
     switch (message.type) {
       case 'DATA':
-        console.log('new data from worker')
+        // console.log('new data from worker')
         const data = message.data
         if (data) {
           this.setState({

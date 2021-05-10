@@ -62,7 +62,7 @@ export class ConnectionManager {
         'nodeStateOptions',
       ])
       .subscribe(() => {
-        console.log('nodes changed, sending new data')
+        // console.log('nodes changed, sending new data')
         const props = this.props.getStateSnapshot()
         props.newData(this.state.getStateSnapshot())
       })
@@ -84,7 +84,7 @@ export class ConnectionManager {
 
     // If we just started updating the graph, get the graph
     this.props.select('updatingGraph').subscribe(ug => {
-      console.log('updating graph changed: ', ug)
+      // console.log('updating graph changed: ', ug)
       if (ug !== undefined) {
         this.getGraph()
       }
