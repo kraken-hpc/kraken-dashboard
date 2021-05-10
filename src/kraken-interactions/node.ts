@@ -1,6 +1,6 @@
 import { fetchNodeListFromUrl, fetchAllNodesFromUrls } from './fetch'
 import { COLORS } from '../config'
-import { cloneDeep } from 'lodash'
+import { cloneDeep, orderBy } from 'lodash'
 import { NodeArea, NodeColorInfo, NodeColorInfoArea } from '../components/settings/NodeColor'
 
 export type KrakenPhysState = 'PHYS_ERROR' | 'POWER_CYCLE' | 'PHYS_HANG' | 'POWER_OFF' | 'PHYS_UNKNOWN' | 'POWER_ON'
@@ -29,6 +29,13 @@ export interface WsMessage {
   data: string
 }
 
+export interface AllNodes {
+  cfgMasterNode: Node | null
+  cfgComputeNodes: Map<string, Node> | null
+  dscMasterNode: Node | null
+  dscComputeNodes: Map<string, Node> | null
+}
+
 export const cfgNodeFetch = async (
   url: string
 ): Promise<{
@@ -47,8 +54,10 @@ export const cfgNodeFetch = async (
     for (let i = 0; i < inputNodes.length; i++) {
       if (inputNodes[i].parentId === null || inputNodes[i].parentId === undefined) {
         masterNode = inputNodes[i]
+        sortNodeArrays(masterNode)
       } else {
         const id = inputNodes[i].id
+        sortNodeArrays(inputNodes[i])
         if (id !== undefined) {
           nodes.set(id, inputNodes[i])
         }
@@ -80,8 +89,10 @@ export const dscNodeFetch = async (
     for (let i = 0; i < inputNodes.length; i++) {
       if (inputNodes[i].id === cfgMasterId) {
         masterNode = inputNodes[i]
+        sortNodeArrays(masterNode)
       } else {
         const id = inputNodes[i].id
+        sortNodeArrays(inputNodes[i])
         if (id !== undefined) {
           nodes.set(id, inputNodes[i])
         }
@@ -95,15 +106,7 @@ export const dscNodeFetch = async (
   }
 }
 
-export const allNodeFetch = async (
-  cfgUrl: string,
-  dscUrl: string
-): Promise<{
-  cfgMasterNode: Node | null
-  cfgComputeNodes: Map<string, Node> | null
-  dscMasterNode: Node | null
-  dscComputeNodes: Map<string, Node> | null
-}> => {
+export const allNodeFetch = async (cfgUrl: string, dscUrl: string): Promise<AllNodes> => {
   const allNodes = await fetchAllNodesFromUrls(cfgUrl, dscUrl)
   if (allNodes !== null) {
     const inputCfgNodes = allNodes[0]
@@ -119,8 +122,10 @@ export const allNodeFetch = async (
     for (let i = 0; i < inputCfgNodes.length; i++) {
       if (inputCfgNodes[i].parentId === null || inputCfgNodes[i].parentId === undefined) {
         cfgMasterNode = inputCfgNodes[i]
+        sortNodeArrays(cfgMasterNode)
       } else {
         const id = inputCfgNodes[i].id
+        sortNodeArrays(inputCfgNodes[i])
         if (id !== undefined) {
           cfgNodes.set(id, inputCfgNodes[i])
         }
@@ -131,8 +136,10 @@ export const allNodeFetch = async (
     for (let i = 0; i < inputDscNodes.length; i++) {
       if (inputDscNodes[i].id === cfgMasterNode.id) {
         dscMasterNode = inputDscNodes[i]
+        sortNodeArrays(dscMasterNode)
       } else {
         const id = inputDscNodes[i].id
+        sortNodeArrays(inputDscNodes[i])
         if (id !== undefined) {
           dscNodes.set(id, inputDscNodes[i])
         }
@@ -597,4 +604,44 @@ export const mergeDSCandCFG = (cfgNode: Node, dscNode: Node): Node => {
   finalNode.services = Array.from(servicesMap.values())
 
   return finalNode
+}
+
+export const sortNodeArrays = (node: Node) => {
+  if (node.extensions) {
+    node.extensions = orderBy(node.extensions, ['@type'], ['asc'])
+  }
+  if (node.services) {
+    node.services.sort()
+  }
+}
+
+export const sortAllNodes = (allNodes: AllNodes): AllNodes => {
+  const finalAllNodes: AllNodes = {
+    cfgMasterNode: cloneDeep(allNodes.cfgMasterNode),
+    cfgComputeNodes: allNodes.cfgComputeNodes,
+    dscMasterNode: cloneDeep(allNodes.dscMasterNode),
+    dscComputeNodes: allNodes.dscComputeNodes,
+  }
+
+  if (allNodes.cfgComputeNodes) {
+    finalAllNodes.cfgComputeNodes = new Map(
+      [...allNodes.cfgComputeNodes.entries()].sort((a, b) => nodeSort(a[1], b[1]))
+    )
+
+    if (allNodes.dscComputeNodes) {
+      const sortedIds = Array.from(finalAllNodes.cfgComputeNodes.keys())
+
+      const finalDscNodes = new Map<string, Node>()
+      for (let index = 0; index < sortedIds.length; index++) {
+        const id = sortedIds[index]
+        const dscNode = allNodes.dscComputeNodes.get(id)
+        if (dscNode) {
+          finalDscNodes.set(id, dscNode)
+        }
+      }
+      finalAllNodes.dscComputeNodes = finalDscNodes
+    }
+  }
+
+  return finalAllNodes
 }
