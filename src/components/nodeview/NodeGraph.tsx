@@ -1,28 +1,39 @@
 import React, { Component, createRef, CSSProperties, RefObject } from 'react'
-import { Network, Data, Options, Color } from 'vis-network'
+import { Network, Options, Color, DataSetNodes, DataSetEdges, Node } from 'vis-network'
+import { DataSet } from 'vis-data'
 import { Graph } from '../../kraken-interactions/graph'
 import { COLORS } from '../../config'
-import _ from 'lodash'
 import { CloseButtonStyle, GraphAreaStyle, GraphSettingsStyle, NodeGraphStyle } from './styles/nodegraphstyles'
+import { cloneDeep } from 'lodash'
 
 interface NodeGraphProps {
+  disconnected: boolean
   graphToggle: () => void
   graph: Graph
 }
 
 interface NodeGraphState {
-  data: Data
-  options: Options
   settingsMenu: boolean
 }
 
+interface Data {
+  nodes: DataSetNodes
+  edges: DataSetEdges
+}
+
 export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
-  graphRef: RefObject<any> = createRef()
-  configRef: RefObject<any> = createRef()
-  network: Network | undefined = undefined
+  graphRef: RefObject<any>
+  configRef: RefObject<any>
+  network: Network | undefined
+  data: Data
+  options: Options
 
   constructor(props: NodeGraphProps) {
     super(props)
+
+    this.graphRef = createRef()
+    this.configRef = createRef()
+    this.network = undefined
 
     const nodes = props.graph.nodes
 
@@ -40,12 +51,12 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       nodes[i].borderWidth = 2
     }
 
-    const data: Data = {
-      nodes: nodes,
-      edges: this.props.graph.edges,
+    this.data = {
+      nodes: new DataSet(nodes),
+      edges: new DataSet(this.props.graph.edges),
     }
 
-    const options: Options = {
+    this.options = {
       edges: {
         arrows: {
           to: {
@@ -69,16 +80,12 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
     }
 
     this.state = {
-      data: data,
-      options: options,
       settingsMenu: false,
     }
   }
 
   componentDidMount() {
-    const options = _.cloneDeep(this.state.options)
-
-    options.configure = {
+    this.options.configure = {
       filter: (option: any, path: any) => {
         if (path.indexOf('physics') !== -1) {
           return true
@@ -91,41 +98,48 @@ export class NodeGraph extends Component<NodeGraphProps, NodeGraphState> {
       container: this.configRef.current,
     }
 
-    this.setState(
-      {
-        options: options,
-      },
-      () => {
-        this.network = new Network(this.graphRef.current, this.state.data, this.state.options)
-
-        // console.log(this.network)
-      }
-    )
+    this.network = new Network(this.graphRef.current, this.data, this.options)
   }
 
   componentDidUpdate(prevProps: NodeGraphProps, prevState: NodeGraphState) {
-    if (this.props.graph !== prevProps.graph) {
-      const data = this.state.data
-      const nodes = this.props.graph.nodes
+    // if we reconnected, reset the graph so it doesn't make a duplicate
+    // The graph freezes if you don't close out the graph viewer on restart. I have no idea why
+    if (prevProps.disconnected === true && this.props.disconnected !== true && this.network) {
+      const nodes = this.highlightNodes(cloneDeep(this.props.graph.nodes))
 
-      // Add highlight color to nodes
-      for (let i = 0; i < nodes.length; i++) {
-        if (nodes[i].color !== undefined) {
-          const color = nodes[i].color as Color
-          const highlight = {
-            border: color.border,
-            background: color.background,
-          }
-          color.highlight = highlight
-          nodes[i].color = color
-        }
-        nodes[i].borderWidth = 2
+      const newData: Data = {
+        nodes: new DataSet(nodes),
+        edges: new DataSet(this.props.graph.edges),
       }
 
-      data.nodes = nodes
-      data.edges = this.props.graph.edges
-      this.forceUpdate()
+      this.network.setData(newData)
+      this.props.graphToggle()
+      return
     }
+
+    if (this.props.graph !== prevProps.graph) {
+      const nodes = this.highlightNodes(cloneDeep(this.props.graph.nodes))
+
+      this.data.nodes.update(nodes)
+      this.data.edges.update(this.props.graph.edges)
+    }
+  }
+
+  // Add highlight color to nodes
+  highlightNodes = (nodes: Node[]): Node[] => {
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].color !== undefined) {
+        const color = nodes[i].color as Color
+        const highlight = {
+          border: color.border,
+          background: color.background,
+        }
+        color.highlight = highlight
+        nodes[i].color = color
+      }
+      nodes[i].borderWidth = 2
+    }
+    return nodes
   }
 
   toggleSettings = () => {

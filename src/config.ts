@@ -6,7 +6,7 @@ export const KRAKEN_IP = '192.168.57.10:3141'
 export const REFRESH = 0.5
 // Should websocket be turned on by default?
 // export const WEBSOCKET = false
-export const CONNECTION: ConnectionType = 'POLL'
+export const CONNECTION: ConnectionType = 'WEBSOCKET'
 
 export const dscUrl: string = `/dsc/nodes`
 export const cfgUrl: string = `/cfg/nodes`

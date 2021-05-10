@@ -35,7 +35,7 @@ export const handleWebSocketMessage = (
       // This is a physstate or runstate update
       if (jsonMessage.url === '/PhysState' || jsonMessage.url === '/RunState') {
         // console.log('url is phystate or runstate')
-        const newCfgNode = newDscNodes.get(jsonMessage.nodeid)
+        const newCfgNode = newCfgNodes.get(jsonMessage.nodeid)
         const newDscNode = newDscNodes.get(jsonMessage.nodeid)
         if (newCfgNode === undefined || newDscNode === undefined) {
           console.log("couldn't find node. Closing websocket and pulling dsc and cfg nodes")
@@ -92,9 +92,9 @@ export const handleWebSocketMessage = (
           setLiveConnection('REFETCH')
           // break
         } else {
-          const updatedNode = updateFromWsMessage(newCfgNode, jsonMessage)
-          if (updatedNode !== undefined) {
-            newCfgNode = updatedNode
+          const updatedCfgNode = updateFromWsMessage(newCfgNode, jsonMessage)
+          if (updatedCfgNode !== undefined) {
+            newCfgNode = updatedCfgNode
             dscUpdateHappened = true
           }
           const updatedDscNode = updateFromWsMessage(newDscNode, jsonMessage)

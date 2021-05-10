@@ -311,18 +311,13 @@ export class ConnectionManager {
   getGraph = () => {
     const props = this.props.getStateSnapshot()
     if (props.updatingGraph !== undefined) {
-      getGraph(
-        props.ip,
-        props.updatingGraph,
-        liveConnectionType => {
-          this.state.setState({
-            liveConnectionActive: liveConnectionType,
-          })
-        },
-        graph => {
+      getGraph(props.ip, props.updatingGraph).then(graph => {
+        if (graph === null) {
+          this.state.setState({ liveConnectionActive: 'RECONNECT' })
+        } else {
           this.state.setState({ graph: graph })
         }
-      )
+      })
     }
   }
 
@@ -336,36 +331,39 @@ export class ConnectionManager {
     const props = this.props.getStateSnapshot()
     // Get cfg and dsc nodes
     allNodeFetch(this.getUrl(cfgUrl), this.getUrl(dscUrl)).then(allNodes => {
-      if (
-        allNodes.cfgMasterNode !== null &&
-        allNodes.cfgComputeNodes !== null &&
-        allNodes.dscMasterNode !== null &&
-        allNodes.dscComputeNodes !== null
-      ) {
-        this.state.setState({
-          cfgMaster: allNodes.cfgMasterNode,
-          cfgNodes: allNodes.cfgComputeNodes,
-          dscMaster: allNodes.dscMasterNode,
-          dscNodes: allNodes.dscComputeNodes,
-        })
-        switch (props.preferredConnectionType) {
-          case 'WEBSOCKET':
-            this.state.setState({
-              liveConnectionActive: 'WEBSOCKET',
-            })
-            break
-          case 'POLL':
-            this.state.setState({
-              liveConnectionActive: 'POLLING',
-            })
-            break
+      getGraph(props.ip, props.updatingGraph).then(graph => {
+        if (
+          allNodes.cfgMasterNode !== null &&
+          allNodes.cfgComputeNodes !== null &&
+          allNodes.dscMasterNode !== null &&
+          allNodes.dscComputeNodes !== null
+        ) {
+          this.state.setState({
+            cfgMaster: allNodes.cfgMasterNode,
+            cfgNodes: allNodes.cfgComputeNodes,
+            dscMaster: allNodes.dscMasterNode,
+            dscNodes: allNodes.dscComputeNodes,
+            graph: graph === null ? undefined : graph,
+          })
+          switch (props.preferredConnectionType) {
+            case 'WEBSOCKET':
+              this.state.setState({
+                liveConnectionActive: 'WEBSOCKET',
+              })
+              break
+            case 'POLL':
+              this.state.setState({
+                liveConnectionActive: 'POLLING',
+              })
+              break
+          }
+        } else {
+          this.state.setState({
+            liveConnectionActive: 'RECONNECT',
+          })
+          return
         }
-      } else {
-        this.state.setState({
-          liveConnectionActive: 'RECONNECT',
-        })
-        return
-      }
+      })
     })
     // Get state enums
     getStateData(this.getUrl(stateOptionsUrl)).then(nodeStateOptions => {

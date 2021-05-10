@@ -24,7 +24,13 @@ export const pollingFunction = (
           let graphCallBack = undefined
           if (graphNodeId !== undefined) {
             graphCallBack = () => {
-              getGraph(ip, graphNodeId, setLiveConnection, setGraph)
+              getGraph(ip, graphNodeId).then(graph => {
+                if (graph === null) {
+                  setLiveConnection('RECONNECT')
+                } else if (graph !== undefined) {
+                  setGraph(graph)
+                }
+              })
             }
           }
           setNodes({
@@ -74,17 +80,10 @@ export const validateNodes = (
   return null
 }
 
-export const getGraph = (
-  ip: string,
-  uuid: string,
-  setLiveConnection: (liveConnectionType: LiveConnectionType) => void,
-  setGraph: (graph: Graph) => void
-) => {
-  fetchJsonFromUrl(getUrl(ip, graphUrlSingle(uuid))).then(graph => {
-    if (graph === null) {
-      setLiveConnection('RECONNECT')
-    } else {
-      setGraph(graph)
-    }
-  })
+export const getGraph = async (ip: string, uuid: string | undefined): Promise<Graph | null | undefined> => {
+  if (uuid) {
+    return await fetchJsonFromUrl(getUrl(ip, graphUrlSingle(uuid)))
+  } else {
+    return null
+  }
 }
