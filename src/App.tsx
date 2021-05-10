@@ -81,10 +81,8 @@ class App extends Component<AppProps, AppState> {
 
   componentDidMount = () => {
     this.getStoredColorInfo()
-    // this.refetch()
     this.worker.addEventListener('message', messageEvent => {
       this.handleWorkerMessages(messageEvent.data)
-      // console.log('message from worker:', messageEvent.data)
     })
 
     const workerConfig: WorkerConfig = {

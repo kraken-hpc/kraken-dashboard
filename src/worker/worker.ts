@@ -26,26 +26,20 @@ export interface WorkerMessage {
 // eslint-disable-next-line no-restricted-globals
 const ctx: Worker = self as any
 
-console.log('hello from web worker')
-// Post data to parent thread
-// ctx.postMessage({ foo: 'foo' })
-
-// Respond to message from parent thread
-// ctx.addEventListener('message', event => console.log(event))
-
 let connectionManager: ConnectionManager | null = null
 let connectionManagerProps: SimpleStore<ConnectionManagerProps> | null = null
 
 const receivedNewData = (data: ConnectionManagerState) => {
   const message: WorkerMessage = { type: 'DATA', data: data }
   ctx.postMessage(message)
-  // console.log('got new data')
 }
 
 const setPreferredConnectionType = (connectionType: ConnectionType) => {
   const message: WorkerMessage = { type: 'CONNECTION', connectionType: connectionType }
   ctx.postMessage(message)
 }
+
+console.log('web worker has started')
 
 ctx.addEventListener('message', messageEvent => {
   // console.log('in webworker', messageEvent.data)
@@ -78,9 +72,6 @@ ctx.addEventListener('message', messageEvent => {
         const responseMessage: WorkerMessage = { type: 'ERROR', error: 'start message config was undefined' }
         ctx.postMessage(responseMessage)
       }
-
       break
   }
-
-  // ctx.postMessage('this is the response ' + messageEvent.data)
 })
